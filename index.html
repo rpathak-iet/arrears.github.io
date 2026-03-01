@@ -1572,7 +1572,7 @@
     }
 
     // Load data from localStorage with exact selection
-       // Load data from localStorage with exact selection
+          // Load data from localStorage with exact selection
     function loadFromLocalStorage() {
         try {
             const saveMetaKey = 'arrears_saved_list';
@@ -1660,15 +1660,32 @@
                     
                     const newRow = createEmptyRow(monthValue);
                     
-                    // Store the saved days value to use after month change event
+                    // Store the saved days value
                     const savedDays = parseInt(row.days) || getDaysInMonth(monthValue);
                     
-                    // Set month first
+                    // Get references to important elements
                     const monthSelect = newRow.querySelector('.month-cell');
-                    monthSelect.value = monthValue;
-                    
-                    // Temporarily remove event listeners to prevent auto-calculation
                     const daysInput = newRow.querySelector('.days-in-month');
+                    
+                    // Temporarily remove the change event listener from month select
+                    const monthChangeHandler = () => {
+                        daysInput.value = getDaysInMonth(monthSelect.value);
+                        recalcRow(newRow);
+                    };
+                    
+                    // Remove existing listeners by cloning and replacing
+                    const newMonthSelect = monthSelect.cloneNode(true);
+                    monthSelect.parentNode.replaceChild(newMonthSelect, monthSelect);
+                    
+                    // Set the month value
+                    newMonthSelect.value = monthValue;
+                    
+                    // Update references
+                    const updatedDaysInput = newRow.querySelector('.days-in-month');
+                    const updatedDuePay = newRow.querySelector('.due-pay');
+                    const updatedDueHraRate = newRow.querySelector('.due-hra-rate');
+                    const updatedDrawnPay = newRow.querySelector('.drawn-pay');
+                    const updatedDrawnHraRate = newRow.querySelector('.drawn-hra-rate');
                     
                     // Helper functions to set values
                     const setField = (selector, value) => {
@@ -1723,6 +1740,14 @@
                         setField('.diff-pfs', row.diffPfs);
                         setField('.diff-unc', row.diffUnc);
                         setField('.diff-net', row.diffNet);
+                        
+                        // Re-attach event listeners for 6th Pay
+                        const dueGp = newRow.querySelector('.due-gp');
+                        const drawnGp = newRow.querySelector('.drawn-gp');
+                        
+                        if (dueGp) dueGp.addEventListener('input', () => recalcRow(newRow));
+                        if (drawnGp) drawnGp.addEventListener('input', () => recalcRow(newRow));
+                        
                     } else {
                         setField('.due-pay', row.duePay);
                         setField('.due-pay2', row.duePay2);
@@ -1748,21 +1773,47 @@
                         setField('.diff-unc', row.diffUnc);
                         setField('.diff-net', row.diffNet);
                         
-                        // Also set PF rate dropdowns for 7th Pay
+                        // Set PF rate dropdowns for 7th Pay
                         if (row.duePfRate) {
                             setSelect('.due-pf-rate', row.duePfRate);
                         }
                         if (row.drawnPfRate) {
                             setSelect('.drawn-pf-rate', row.drawnPfRate);
                         }
+                        
+                        // Re-attach event listeners for 7th Pay
+                        const duePfRate = newRow.querySelector('.due-pf-rate');
+                        const drawnPfRate = newRow.querySelector('.drawn-pf-rate');
+                        
+                        if (duePfRate) duePfRate.addEventListener('change', () => recalcRow(newRow));
+                        if (drawnPfRate) drawnPfRate.addEventListener('change', () => recalcRow(newRow));
                     }
                     
                     setField('.da-rate-drawn', row.daRate);
                     
-                    // Set days value LAST and trigger recalc with the saved days
-                    daysInput.value = savedDays;
+                    // Set days value - this is the critical part
+                    updatedDaysInput.value = savedDays;
                     
-                    // Now trigger recalc with the correct days value
+                    // Re-attach month change event listener
+                    newMonthSelect.addEventListener('change', () => {
+                        updatedDaysInput.value = getDaysInMonth(newMonthSelect.value);
+                        recalcRow(newRow);
+                    });
+                    
+                    // Re-attach other event listeners
+                    updatedDaysInput.addEventListener('input', () => recalcRow(newRow));
+                    updatedDuePay.addEventListener('input', () => recalcRow(newRow));
+                    updatedDueHraRate.addEventListener('change', () => recalcRow(newRow));
+                    updatedDrawnPay.addEventListener('input', () => recalcRow(newRow));
+                    updatedDrawnHraRate.addEventListener('change', () => recalcRow(newRow));
+                    
+                    // Delete button event listener
+                    newRow.querySelector('.delete-btn').addEventListener('click', function() {
+                        if (document.querySelectorAll('#tableBody tr').length > 1) newRow.remove();
+                        else alert('At least one row required');
+                    });
+                    
+                    // Force recalculation with the correct days value
                     recalcRow(newRow);
                     
                     tbody.appendChild(newRow);
@@ -2229,4 +2280,5 @@
 </script>
 </body>
 </html>
+
 

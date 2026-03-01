@@ -384,19 +384,11 @@
             gap: 10px;
             margin-left: 15px;
         }
-        .data-controls button {
+        .data-controls button.primary {
             background: #4a6fa5;
-            color: white;
-            border: none;
-        }
-        .data-controls button:hover {
-            background: #3a5a8a;
         }
         .data-controls button.danger {
             background: #dc3545;
-        }
-        .data-controls button.danger:hover {
-            background: #c82333;
         }
         @media print {
             .no-print, .toolstrip, .delete-btn, .note, .message-box, .cpc-selector, .copyright-footer, .data-controls { display: none; }
@@ -414,6 +406,7 @@
             button { padding: 5px 10px; font-size: 0.7rem; }
             .increment-row { flex-direction: column; gap: 8px; }
             .cpc-selector { flex-direction: column; padding: 10px; }
+            .data-controls { margin-left: 0; }
         }
     </style>
 </head>
@@ -1627,10 +1620,15 @@
             
             const data = JSON.parse(dataJson);
             
-            // Apply loaded data to form
+            // Clear existing table first
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // Set CPC type first (this will update the header)
             document.getElementById('cpcType').value = data.cpcType || '7thPay';
             updateTableHeader();
             
+            // Set all form fields
             document.getElementById('empId').value = data.empId || '';
             document.getElementById('empName').value = data.empName || 'Guest User';
             document.getElementById('designation').value = data.designation || 'Guest';
@@ -1639,10 +1637,6 @@
             document.getElementById('toDate').value = data.toDate || (data.cpcType === '6thPay' ? '2015-12-31' : '2025-12-31');
             document.getElementById('incrementMonth').value = data.incrementMonth || 'July';
             document.getElementById('fixedHRA').value = data.fixedHRA || '0';
-            
-            // Clear existing table
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
             
             // Load table data exactly as saved
             if (data.tableData && Array.isArray(data.tableData)) {
@@ -1749,6 +1743,14 @@
                         setField('.diff-pfs', row.diffPfs);
                         setField('.diff-unc', row.diffUnc);
                         setField('.diff-net', row.diffNet);
+                        
+                        // Also set PF rate dropdowns for 7th Pay
+                        if (row.duePfRate) {
+                            setSelect('.due-pf-rate', row.duePfRate);
+                        }
+                        if (row.drawnPfRate) {
+                            setSelect('.drawn-pf-rate', row.drawnPfRate);
+                        }
                     }
                     
                     setField('.da-rate-drawn', row.daRate);

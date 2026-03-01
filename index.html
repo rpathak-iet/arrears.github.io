@@ -1821,6 +1821,7 @@
     }
 
     // Load data from localStorage with exact selection
+        // Load data from localStorage with exact selection
     function loadFromLocalStorage() {
         try {
             const saveMetaKey = 'arrears_saved_list';
@@ -1906,177 +1907,171 @@
                         monthValue = data.cpcType === '6thPay' ? '2006-01' : '2016-01';
                     }
                     
-                    const newRow = createEmptyRow(monthValue);
+                    // Create a new row but DON'T use createEmptyRow as it sets default values
+                    // Instead, create a custom row with the saved values
+                    const newRow = document.createElement('tr');
+                    const cpcType = data.cpcType;
                     
-                    // Store the saved days value
-                    const savedDays = parseInt(row.days) || getDaysInMonth(monthValue);
+                    // Build the row HTML based on CPC type
+                    if (cpcType === '6thPay') {
+                        // Generate month options with the saved month selected
+                        const monthOptions = generateMonthOptions(monthValue, cpcType);
+                        
+                        newRow.innerHTML = `
+                            <td class="month-with-days">
+                                <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
+                                <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
+                            </td>
+                            <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
+                            <!-- DUE -->
+                            <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
+                            <td class="due-col gp-column"><input type="number" class="due-gp" value="${row.dueGp}" step="10" min="0"></td>
+                            <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
+                            <td class="due-col gp-column"><input type="number" class="due-gp1" readonly value="${row.dueGp1}"></td>
+                            <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
+                            <td class="due-col">
+                                <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Yes" ${row.dueHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
+                                </select>
+                            </td>
+                            <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
+                            <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
+                            <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
+                            <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
+                            <!-- DRAWN -->
+                            <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
+                            <td class="drawn-col gp-column"><input type="number" class="drawn-gp" value="${row.drawnGp}" step="10" min="0"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
+                            <td class="drawn-col gp-column"><input type="number" class="drawn-gp1" readonly value="${row.drawnGp1}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
+                            <td class="drawn-col">
+                                <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Yes" ${row.drawnHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
+                                </select>
+                            </td>
+                            <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
+                            <!-- DIFFERENCE -->
+                            <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
+                            <td class="diff-col gp-column"><input type="number" class="diff-gp" readonly value="${row.diffGp}"></td>
+                            <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
+                            <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
+                            <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
+                            <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
+                            <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
+                            <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
+                            <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
+                            <td><button class="delete-btn" title="remove">✕</button></td>
+                        `;
+                    } else {
+                        // Generate month options with the saved month selected
+                        const monthOptions = generateMonthOptions(monthValue, cpcType);
+                        
+                        newRow.innerHTML = `
+                            <td class="month-with-days">
+                                <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
+                                <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
+                            </td>
+                            <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
+                            <!-- DUE -->
+                            <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
+                            <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
+                            <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
+                            <td class="due-col">
+                                <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Fixed" ${row.dueHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                                    <option value="0.1*PAY2" ${row.dueHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
+                                </select>
+                            </td>
+                            <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
+                            <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
+                            <!-- PF Rate Dropdown Column -->
+                            <td class="due-col">
+                                <select class="pf-rate-formula due-pf-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="0.0833*PAY2" ${row.duePfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                    <option value="0.0833*(PAY2+DA)" ${row.duePfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                    <option value="0.10*PAY2" ${row.duePfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                    <option value="0.10*(PAY2+DA)" ${row.duePfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
+                                </select>
+                            </td>
+                            <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
+                            <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
+                            <!-- DRAWN -->
+                            <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
+                            <td class="drawn-col">
+                                <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
+                                    <option value="Fixed" ${row.drawnHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                                    <option value="0.1*PAY2" ${row.drawnHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
+                                </select>
+                            </td>
+                            <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
+                            <!-- PF Rate Dropdown Column -->
+                            <td class="drawn-col">
+                                <select class="pf-rate-formula drawn-pf-rate" style="width:100%; font-size:0.6rem;">
+                                    <option value="0.0833*PAY2" ${row.drawnPfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                    <option value="0.0833*(PAY2+DA)" ${row.drawnPfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                    <option value="0.10*PAY2" ${row.drawnPfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                    <option value="0.10*(PAY2+DA)" ${row.drawnPfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
+                                </select>
+                            </td>
+                            <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
+                            <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
+                            <!-- DIFFERENCE -->
+                            <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
+                            <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
+                            <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
+                            <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
+                            <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
+                            <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
+                            <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
+                            <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
+                            <td><button class="delete-btn" title="remove">✕</button></td>
+                        `;
+                    }
                     
-                    // Get references to important elements
+                    // Now attach all event listeners
                     const monthSelect = newRow.querySelector('.month-cell');
                     const daysInput = newRow.querySelector('.days-in-month');
+                    const duePay = newRow.querySelector('.due-pay');
+                    const dueHraRate = newRow.querySelector('.due-hra-rate');
+                    const drawnPay = newRow.querySelector('.drawn-pay');
+                    const drawnHraRate = newRow.querySelector('.drawn-hra-rate');
                     
-                    // Temporarily remove the change event listener from month select by cloning
-                    const newMonthSelect = monthSelect.cloneNode(false);
-                    monthSelect.parentNode.replaceChild(newMonthSelect, monthSelect);
+                    // Month change event
+                    monthSelect.addEventListener('change', () => {
+                        daysInput.value = getDaysInMonth(monthSelect.value);
+                        recalcRow(newRow);
+                    });
                     
-                    // Set the month value
-                    newMonthSelect.value = monthValue;
+                    // Input events
+                    daysInput.addEventListener('input', () => recalcRow(newRow));
+                    duePay.addEventListener('input', () => recalcRow(newRow));
+                    dueHraRate.addEventListener('change', () => recalcRow(newRow));
+                    drawnPay.addEventListener('input', () => recalcRow(newRow));
+                    drawnHraRate.addEventListener('change', () => recalcRow(newRow));
                     
-                    // Populate the month select options
-                    const monthOptions = generateMonthOptions(monthValue, data.cpcType);
-                    newMonthSelect.innerHTML = monthOptions;
-                    newMonthSelect.value = monthValue;
-                    
-                    // Update references
-                    const updatedDaysInput = newRow.querySelector('.days-in-month');
-                    const updatedDuePay = newRow.querySelector('.due-pay');
-                    const updatedDueHraRate = newRow.querySelector('.due-hra-rate');
-                    const updatedDrawnPay = newRow.querySelector('.drawn-pay');
-                    const updatedDrawnHraRate = newRow.querySelector('.drawn-hra-rate');
-                    
-                    // Helper functions to set values
-                    const setField = (selector, value) => {
-                        const field = newRow.querySelector(selector);
-                        if (field) {
-                            field.value = (value !== undefined && value !== null) ? parseFloat(value) : 0;
-                        }
-                    };
-                    
-                    const setSelect = (selector, value) => {
-                        const field = newRow.querySelector(selector);
-                        if (field && value) {
-                            // Check if the value exists in options
-                            const options = Array.from(field.options).map(opt => opt.value);
-                            if (options.includes(value)) {
-                                field.value = value;
-                            } else {
-                                field.value = field.options[0].value; // Set to first option if not found
-                            }
-                        }
-                    };
-                    
-                    // Set all fields based on CPC type
-                    setField('.dalimit-cell', row.daLimit);
-                    
-                    if (data.cpcType === '6thPay') {
-                        setField('.due-pay', row.duePay);
-                        setField('.due-gp', row.dueGp);
-                        setField('.due-pay2', row.duePay2);
-                        setField('.due-gp1', row.dueGp1);
-                        setField('.due-da', row.dueDa);
-                        setSelect('.due-hra-rate', row.dueHraRate);
-                        setField('.due-hra', row.dueHra);
-                        setField('.due-total', row.dueTotal);
-                        setField('.due-pfs', row.duePfs);
-                        setField('.due-unc', row.dueUnc);
-                        setField('.drawn-pay', row.drawnPay);
-                        setField('.drawn-gp', row.drawnGp);
-                        setField('.drawn-pay2', row.drawnPay2);
-                        setField('.drawn-gp1', row.drawnGp1);
-                        setField('.drawn-da', row.drawnDa);
-                        setSelect('.drawn-hra-rate', row.drawnHraRate);
-                        setField('.drawn-hra', row.drawnHra);
-                        setField('.drawn-total', row.drawnTotal);
-                        setField('.drawn-pfs', row.drawnPfs);
-                        setField('.drawn-unc', row.drawnUnc);
-                        setField('.diff-pay', row.diffPay);
-                        setField('.diff-gp', row.diffGp);
-                        setField('.diff-da', row.diffDa);
-                        setField('.diff-hra', row.diffHra);
-                        setField('.diff-total', row.diffTotal);
-                        setField('.diff-pfs', row.diffPfs);
-                        setField('.diff-unc', row.diffUnc);
-                        setField('.diff-net', row.diffNet);
-                        
-                        // Re-attach event listeners for 6th Pay
+                    if (cpcType === '6thPay') {
                         const dueGp = newRow.querySelector('.due-gp');
                         const drawnGp = newRow.querySelector('.drawn-gp');
-                        
                         if (dueGp) dueGp.addEventListener('input', () => recalcRow(newRow));
                         if (drawnGp) drawnGp.addEventListener('input', () => recalcRow(newRow));
-                        
                     } else {
-                        setField('.due-pay', row.duePay);
-                        setField('.due-pay2', row.duePay2);
-                        setField('.due-da', row.dueDa);
-                        setSelect('.due-hra-rate', row.dueHraRate);
-                        setField('.due-hra', row.dueHra);
-                        setField('.due-total', row.dueTotal);
-                        
-                        // Set PF rate dropdowns for 7th Pay - CRITICAL FIX
-                        if (row.duePfRate) {
-                            const duePfRateSelect = newRow.querySelector('.due-pf-rate');
-                            if (duePfRateSelect) {
-                                // Check if the value exists in options
-                                const options = Array.from(duePfRateSelect.options).map(opt => opt.value);
-                                if (options.includes(row.duePfRate)) {
-                                    duePfRateSelect.value = row.duePfRate;
-                                } else {
-                                    duePfRateSelect.value = '0.0833*(PAY2+DA)'; // Default if not found
-                                }
-                            }
-                        }
-                        
-                        setField('.due-pfs', row.duePfs);
-                        setField('.due-unc', row.dueUnc);
-                        setField('.drawn-pay', row.drawnPay);
-                        setField('.drawn-pay2', row.drawnPay2);
-                        setField('.drawn-da', row.drawnDa);
-                        setSelect('.drawn-hra-rate', row.drawnHraRate);
-                        setField('.drawn-hra', row.drawnHra);
-                        setField('.drawn-total', row.drawnTotal);
-                        
-                        // Set PF rate dropdowns for DRAWN - CRITICAL FIX
-                        if (row.drawnPfRate) {
-                            const drawnPfRateSelect = newRow.querySelector('.drawn-pf-rate');
-                            if (drawnPfRateSelect) {
-                                // Check if the value exists in options
-                                const options = Array.from(drawnPfRateSelect.options).map(opt => opt.value);
-                                if (options.includes(row.drawnPfRate)) {
-                                    drawnPfRateSelect.value = row.drawnPfRate;
-                                } else {
-                                    drawnPfRateSelect.value = '0.0833*(PAY2+DA)'; // Default if not found
-                                }
-                            }
-                        }
-                        
-                        setField('.drawn-pfs', row.drawnPfs);
-                        setField('.drawn-unc', row.drawnUnc);
-                        setField('.diff-pay', row.diffPay);
-                        setField('.diff-da', row.diffDa);
-                        setField('.diff-hra', row.diffHra);
-                        setField('.diff-total', row.diffTotal);
-                        setField('.diff-pfs', row.diffPfs);
-                        setField('.diff-unc', row.diffUnc);
-                        setField('.diff-net', row.diffNet);
-                        
-                        // Re-attach event listeners for 7th Pay
                         const duePfRate = newRow.querySelector('.due-pf-rate');
                         const drawnPfRate = newRow.querySelector('.drawn-pf-rate');
-                        
                         if (duePfRate) duePfRate.addEventListener('change', () => recalcRow(newRow));
                         if (drawnPfRate) drawnPfRate.addEventListener('change', () => recalcRow(newRow));
                     }
                     
-                    setField('.da-rate-drawn', row.daRate);
-                    
-                    // Set days value - this is the critical part
-                    updatedDaysInput.value = savedDays;
-                    
-                    // Re-attach month change event listener
-                    newMonthSelect.addEventListener('change', () => {
-                        updatedDaysInput.value = getDaysInMonth(newMonthSelect.value);
-                        recalcRow(newRow);
-                    });
-                    
-                    // Re-attach other event listeners
-                    updatedDaysInput.addEventListener('input', () => recalcRow(newRow));
-                    updatedDuePay.addEventListener('input', () => recalcRow(newRow));
-                    updatedDueHraRate.addEventListener('change', () => recalcRow(newRow));
-                    updatedDrawnPay.addEventListener('input', () => recalcRow(newRow));
-                    updatedDrawnHraRate.addEventListener('change', () => recalcRow(newRow));
-                    
-                    // Delete button event listener
+                    // Delete button
                     newRow.querySelector('.delete-btn').addEventListener('click', function() {
                         if (document.querySelectorAll('#tableBody tr').length > 1) newRow.remove();
                         else alert('At least one row required');
@@ -2549,6 +2544,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             height: 98vh;
+            position: relative;
         }
         .univ-header {
             background: #1e3a8a;
@@ -390,8 +391,122 @@
         .data-controls button.danger {
             background: #dc3545;
         }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px -12px #0f2a4a;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2ebf9;
+        }
+        .modal-header h3 {
+            color: #1e3a8a;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0 5px;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        .saved-item {
+            background: #f8fafd;
+            border: 1px solid #d4e1f5;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .saved-item:hover {
+            background: #e2ebf9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .saved-item.selected {
+            background: #c8d9f0;
+            border: 2px solid #1e3a8a;
+        }
+        .saved-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .saved-item-name {
+            font-weight: 700;
+            color: #1e3a8a;
+            font-size: 1rem;
+        }
+        .saved-item-cpc {
+            background: #1e3a8a;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .saved-item-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+        .saved-item-details span.label {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e2ebf9;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            font-size: 0.9rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 1rem;
+        }
         @media print {
-            .no-print, .toolstrip, .delete-btn, .note, .message-box, .cpc-selector, .copyright-footer, .data-controls { display: none; }
+            .no-print, .toolstrip, .delete-btn, .note, .message-box, .cpc-selector, .copyright-footer, .data-controls, .modal-overlay { display: none; }
             body { background: white; }
             .univ-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .table-wrapper { overflow: visible; }
@@ -407,6 +522,7 @@
             .increment-row { flex-direction: column; gap: 8px; }
             .cpc-selector { flex-direction: column; padding: 10px; }
             .data-controls { margin-left: 0; }
+            .modal-content { width: 95%; padding: 15px; }
         }
     </style>
 </head>
@@ -447,7 +563,7 @@
         <div class="data-controls">
             <button id="saveLocalBtn" class="primary" title="Save to browser">💾 Save</button>
             <button id="loadLocalBtn" class="primary" title="Load from browser">📂 Load</button>
-            <button id="clearSavedBtn" class="danger" title="Clear all saved data">🗑️ Clear Saved</button>
+            <button id="clearSavedBtn" class="danger" title="Clear saved data">🗑️ Clear Saved</button>
         </div>
     </div>
 
@@ -492,8 +608,8 @@
         ✅ <strong>HRA Calculation (7th Pay):</strong> HRA Rate dropdown (No, Fixed, 0.1*PAY2) - HRA = Fixed HRA if Fixed selected, or 0.1*PAY2 if formula selected.<br>
         ✅ <strong>Fixed HRA:</strong> Set in the increment row for 7th Pay CPC.<br>
         ✅ <strong>PF Rate (7th Pay):</strong> Select formula from dropdown - calculates PF S in both DUE and DRAWN columns.<br>
-        ✅ <strong>Save/Load:</strong> Use the buttons in the increment row to save/load data from your browser. Load shows a selection dialog.<br>
-        ✅ <strong>Clear Saved:</strong> Permanently removes all saved data from browser storage.<br>
+        ✅ <strong>Save/Load:</strong> Use the buttons in the increment row to save/load data from your browser. Modern popup for selection.<br>
+        ✅ <strong>Clear Saved:</strong> Select which saved data to delete from the popup.<br>
         ✅ <strong>Download PDF:</strong> Generates PDF from saved data with proper formatting (HRA Rate columns hidden).
     </div>
 
@@ -502,6 +618,23 @@
         <span>©</span> 2026 — Developed by <strong>Dr Rohit Pathak</strong>, Associate Professor, IET DAVV, Indore
     </div>
     <!-- ********** END COPYRIGHT ********** -->
+</div>
+
+<!-- Modal for saved data selection -->
+<div id="savedDataModal" class="modal-overlay no-print">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Select Saved Data</h3>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="modalBody" style="max-height: 50vh; overflow-y: auto;">
+            <!-- Saved items will be dynamically added here -->
+        </div>
+        <div class="modal-actions">
+            <button id="modalCancelBtn" class="danger" onclick="closeModal()">Cancel</button>
+            <button id="modalActionBtn" class="primary">Confirm</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -552,6 +685,8 @@
     };
 
     let currentCPCType = '7thPay';
+    let currentModalCallback = null;
+    let selectedItemKey = null;
 
     // Format number in Indian style (with commas)
     function formatIndianNumber(num) {
@@ -1457,6 +1592,7 @@
                     dueHraRate: r.querySelector('.due-hra-rate').value,
                     dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
                     dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
+                    duePfRate: r.querySelector('.due-pf-rate') ? r.querySelector('.due-pf-rate').value : '0.0833*(PAY2+DA)',
                     duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
                     dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
                     drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
@@ -1465,6 +1601,7 @@
                     drawnHraRate: r.querySelector('.drawn-hra-rate').value,
                     drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
                     drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
+                    drawnPfRate: r.querySelector('.drawn-pf-rate') ? r.querySelector('.drawn-pf-rate').value : '0.0833*(PAY2+DA)',
                     drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
                     drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
                     diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
@@ -1514,8 +1651,63 @@
         }, 5000);
     }
 
+    // Modal functions
+    function openModal(title, items, callback) {
+        const modal = document.getElementById('savedDataModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const actionBtn = document.getElementById('modalActionBtn');
+        
+        modalTitle.textContent = title;
+        selectedItemKey = null;
+        currentModalCallback = callback;
+        
+        // Build modal content
+        if (items.length === 0) {
+            modalBody.innerHTML = '<div class="empty-state">No saved data found</div>';
+            actionBtn.style.display = 'none';
+        } else {
+            let html = '';
+            items.forEach((item, index) => {
+                html += `
+                    <div class="saved-item" data-key="${item.key}" onclick="selectItem(this)">
+                        <div class="saved-item-header">
+                            <span class="saved-item-name">${item.empName} (${item.empId})</span>
+                            <span class="saved-item-cpc">${item.cpcType}</span>
+                        </div>
+                        <div class="saved-item-details">
+                            <div><span class="label">Level:</span> ${item.level}</div>
+                            <div><span class="label">Date:</span> ${item.date}</div>
+                            <div><span class="label">Period:</span> ${item.fromDate} to ${item.toDate}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            modalBody.innerHTML = html;
+            actionBtn.style.display = 'inline-flex';
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    window.selectItem = function(element) {
+        // Remove selected class from all items
+        document.querySelectorAll('.saved-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        // Add selected class to clicked item
+        element.classList.add('selected');
+        selectedItemKey = element.dataset.key;
+    }
+
+    window.closeModal = function() {
+        const modal = document.getElementById('savedDataModal');
+        modal.style.display = 'none';
+        selectedItemKey = null;
+        currentModalCallback = null;
+    }
+
     // Save data to localStorage
-       // Save data to localStorage
     function saveToLocalStorage() {
         try {
             const data = collectDataForSaving();
@@ -1572,256 +1764,7 @@
         }
     }
 
-    function collectDataForSaving() {
-        const rows = document.querySelectorAll('#tableBody tr');
-        const cpcType = document.getElementById('cpcType').value;
-        const tableData = [];
-
-        rows.forEach(r => {
-            const monthSel = r.querySelector('.month-cell');
-            const monthLabel = monthSel.options[monthSel.selectedIndex].text;
-            
-            if (cpcType === '6thPay') {
-                const rowData = {
-                    month: monthLabel,
-                    days: parseInt(r.querySelector('.days-in-month').value) || 0,
-                    daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
-                    duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
-                    dueGp: parseFloat(r.querySelector('.due-gp').value) || 0,
-                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
-                    dueGp1: parseFloat(r.querySelector('.due-gp1').value) || 0,
-                    dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
-                    dueHraRate: r.querySelector('.due-hra-rate').value,
-                    dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
-                    dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
-                    duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
-                    dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
-                    drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
-                    drawnGp: parseFloat(r.querySelector('.drawn-gp').value) || 0,
-                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
-                    drawnGp1: parseFloat(r.querySelector('.drawn-gp1').value) || 0,
-                    drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
-                    drawnHraRate: r.querySelector('.drawn-hra-rate').value,
-                    drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
-                    drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
-                    drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
-                    drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
-                    diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
-                    diffGp: parseFloat(r.querySelector('.diff-gp').value) || 0,
-                    diffDa: parseFloat(r.querySelector('.diff-da').value) || 0,
-                    diffHra: parseFloat(r.querySelector('.diff-hra').value) || 0,
-                    diffTotal: parseFloat(r.querySelector('.diff-total').value) || 0,
-                    diffPfs: parseFloat(r.querySelector('.diff-pfs').value) || 0,
-                    diffUnc: parseFloat(r.querySelector('.diff-unc').value) || 0,
-                    diffNet: parseFloat(r.querySelector('.diff-net').value) || 0,
-                    daRate: parseFloat(r.querySelector('.da-rate-drawn').value) || 0
-                };
-                tableData.push(rowData);
-            } else {
-                const rowData = {
-                    month: monthLabel,
-                    days: parseInt(r.querySelector('.days-in-month').value) || 0,
-                    daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
-                    duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
-                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
-                    dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
-                    dueHraRate: r.querySelector('.due-hra-rate').value,
-                    dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
-                    dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
-                    duePfRate: r.querySelector('.due-pf-rate') ? r.querySelector('.due-pf-rate').value : '0.0833*(PAY2+DA)',
-                    duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
-                    dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
-                    drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
-                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
-                    drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
-                    drawnHraRate: r.querySelector('.drawn-hra-rate').value,
-                    drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
-                    drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
-                    drawnPfRate: r.querySelector('.drawn-pf-rate') ? r.querySelector('.drawn-pf-rate').value : '0.0833*(PAY2+DA)',
-                    drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
-                    drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
-                    diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
-                    diffDa: parseFloat(r.querySelector('.diff-da').value) || 0,
-                    diffHra: parseFloat(r.querySelector('.diff-hra').value) || 0,
-                    diffTotal: parseFloat(r.querySelector('.diff-total').value) || 0,
-                    diffPfs: parseFloat(r.querySelector('.diff-pfs').value) || 0,
-                    diffUnc: parseFloat(r.querySelector('.diff-unc').value) || 0,
-                    diffNet: parseFloat(r.querySelector('.diff-net').value) || 0,
-                    daRate: parseFloat(r.querySelector('.da-rate-drawn').value) || 0
-                };
-                tableData.push(rowData);
-            }
-        });
-
-        return {
-            tableData: tableData,
-            cpcType: cpcType,
-            empId: document.getElementById('empId').value,
-            empName: document.getElementById('empName').value,
-            designation: document.getElementById('designation').value,
-            level: document.getElementById('levelField').value,
-            fromDate: document.getElementById('fromDate').value,
-            toDate: document.getElementById('toDate').value,
-            incrementMonth: document.getElementById('incrementMonth').value,
-            fixedHRA: document.getElementById('fixedHRA').value
-        };
-    }
-
-    // Load data from localStorage with exact selection
-        // Save data to localStorage
-    function saveToLocalStorage() {
-        try {
-            const data = collectDataForSaving();
-            
-            if (!data.empId || data.empId.trim() === '') {
-                showMessage('❌ Please enter Employee ID before saving', false);
-                return;
-            }
-            
-            if (data.tableData.length === 0) {
-                showMessage('❌ No data rows to save', false);
-                return;
-            }
-            
-            // Create a unique key based on CPC type, empId and timestamp
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const saveKey = `arrears_${data.cpcType}_${data.empId}_${timestamp}`;
-            const saveMetaKey = 'arrears_saved_list';
-            
-            // Get existing saved list or create new one
-            let savedList = JSON.parse(localStorage.getItem(saveMetaKey) || '[]');
-            
-            // Add this save to the list with metadata
-            savedList.push({
-                key: saveKey,
-                cpcType: data.cpcType,
-                empId: data.empId,
-                empName: data.empName,
-                date: new Date().toLocaleString(),
-                level: data.level,
-                fromDate: data.fromDate,
-                toDate: data.toDate,
-                timestamp: Date.now()
-            });
-            
-            // Keep only last 20 saves to avoid clutter
-            if (savedList.length > 20) {
-                // Sort by timestamp (newest first) and keep top 20
-                savedList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                const removed = savedList.splice(20);
-                // Remove old data from localStorage
-                removed.forEach(item => {
-                    localStorage.removeItem(item.key);
-                });
-            }
-            
-            // Save current data
-            localStorage.setItem(saveKey, JSON.stringify(data));
-            localStorage.setItem(saveMetaKey, JSON.stringify(savedList));
-            
-            showMessage(`✅ Data saved successfully for ${data.empName} (${data.empId})`, true);
-        } catch (error) {
-            showMessage('❌ Error saving to localStorage: ' + error.message, false);
-        }
-    }
-
-    function collectDataForSaving() {
-        const rows = document.querySelectorAll('#tableBody tr');
-        const cpcType = document.getElementById('cpcType').value;
-        const tableData = [];
-
-        rows.forEach(r => {
-            const monthSel = r.querySelector('.month-cell');
-            const monthLabel = monthSel.options[monthSel.selectedIndex].text;
-            
-            if (cpcType === '6thPay') {
-                const rowData = {
-                    month: monthLabel,
-                    days: parseInt(r.querySelector('.days-in-month').value) || 0,
-                    daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
-                    duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
-                    dueGp: parseFloat(r.querySelector('.due-gp').value) || 0,
-                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
-                    dueGp1: parseFloat(r.querySelector('.due-gp1').value) || 0,
-                    dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
-                    dueHraRate: r.querySelector('.due-hra-rate').value,
-                    dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
-                    dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
-                    duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
-                    dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
-                    drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
-                    drawnGp: parseFloat(r.querySelector('.drawn-gp').value) || 0,
-                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
-                    drawnGp1: parseFloat(r.querySelector('.drawn-gp1').value) || 0,
-                    drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
-                    drawnHraRate: r.querySelector('.drawn-hra-rate').value,
-                    drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
-                    drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
-                    drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
-                    drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
-                    diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
-                    diffGp: parseFloat(r.querySelector('.diff-gp').value) || 0,
-                    diffDa: parseFloat(r.querySelector('.diff-da').value) || 0,
-                    diffHra: parseFloat(r.querySelector('.diff-hra').value) || 0,
-                    diffTotal: parseFloat(r.querySelector('.diff-total').value) || 0,
-                    diffPfs: parseFloat(r.querySelector('.diff-pfs').value) || 0,
-                    diffUnc: parseFloat(r.querySelector('.diff-unc').value) || 0,
-                    diffNet: parseFloat(r.querySelector('.diff-net').value) || 0,
-                    daRate: parseFloat(r.querySelector('.da-rate-drawn').value) || 0
-                };
-                tableData.push(rowData);
-            } else {
-                const rowData = {
-                    month: monthLabel,
-                    days: parseInt(r.querySelector('.days-in-month').value) || 0,
-                    daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
-                    duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
-                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
-                    dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
-                    dueHraRate: r.querySelector('.due-hra-rate').value,
-                    dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
-                    dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
-                    duePfRate: r.querySelector('.due-pf-rate') ? r.querySelector('.due-pf-rate').value : '0.0833*(PAY2+DA)',
-                    duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
-                    dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
-                    drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
-                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
-                    drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
-                    drawnHraRate: r.querySelector('.drawn-hra-rate').value,
-                    drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
-                    drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
-                    drawnPfRate: r.querySelector('.drawn-pf-rate') ? r.querySelector('.drawn-pf-rate').value : '0.0833*(PAY2+DA)',
-                    drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
-                    drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
-                    diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
-                    diffDa: parseFloat(r.querySelector('.diff-da').value) || 0,
-                    diffHra: parseFloat(r.querySelector('.diff-hra').value) || 0,
-                    diffTotal: parseFloat(r.querySelector('.diff-total').value) || 0,
-                    diffPfs: parseFloat(r.querySelector('.diff-pfs').value) || 0,
-                    diffUnc: parseFloat(r.querySelector('.diff-unc').value) || 0,
-                    diffNet: parseFloat(r.querySelector('.diff-net').value) || 0,
-                    daRate: parseFloat(r.querySelector('.da-rate-drawn').value) || 0
-                };
-                tableData.push(rowData);
-            }
-        });
-
-        return {
-            tableData: tableData,
-            cpcType: cpcType,
-            empId: document.getElementById('empId').value,
-            empName: document.getElementById('empName').value,
-            designation: document.getElementById('designation').value,
-            level: document.getElementById('levelField').value,
-            fromDate: document.getElementById('fromDate').value,
-            toDate: document.getElementById('toDate').value,
-            incrementMonth: document.getElementById('incrementMonth').value,
-            fixedHRA: document.getElementById('fixedHRA').value
-        };
-    }
-
-    // Load data from localStorage with exact selection
-        // Load data from localStorage with exact selection
+    // Load data from localStorage with selection
     function loadFromLocalStorage() {
         try {
             const saveMetaKey = 'arrears_saved_list';
@@ -1835,256 +1778,240 @@
             // Sort by date (newest first)
             savedList.sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            // Create a detailed selection dialog
-            let message = "Select saved data to load:\n\n";
-            savedList.forEach((save, index) => {
-                message += `${index + 1}. ${save.empName} (${save.empId})\n`;
-                message += `   ${save.cpcType} | ${save.level} | ${save.date}\n`;
-                message += `   Period: ${save.fromDate} to ${save.toDate}\n\n`;
-            });
-            message += `Enter number (1-${savedList.length}) or Cancel to abort:`;
-            
-            const selection = prompt(message);
-            
-            if (selection === null) {
-                showInfo('❌ Load cancelled');
-                return;
-            }
-            
-            const index = parseInt(selection) - 1;
-            if (isNaN(index) || index < 0 || index >= savedList.length) {
-                showMessage('❌ Invalid selection', false);
-                return;
-            }
-            
-            const selectedSave = savedList[index];
-            const dataJson = localStorage.getItem(selectedSave.key);
-            
-            if (!dataJson) {
-                showMessage('❌ Saved data not found. It may have been deleted.', false);
-                // Remove invalid entry from list
-                const updatedList = savedList.filter(s => s.key !== selectedSave.key);
-                localStorage.setItem(saveMetaKey, JSON.stringify(updatedList));
-                return;
-            }
-            
-            const data = JSON.parse(dataJson);
-            
-            // Clear existing table first
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            // Set CPC type first (this will update the header)
-            document.getElementById('cpcType').value = data.cpcType || '7thPay';
-            updateTableHeader();
-            
-            // Set all form fields
-            document.getElementById('empId').value = data.empId || '';
-            document.getElementById('empName').value = data.empName || 'Guest User';
-            document.getElementById('designation').value = data.designation || 'Guest';
-            document.getElementById('levelField').value = data.level || 'Level 10';
-            document.getElementById('fromDate').value = data.fromDate || (data.cpcType === '6thPay' ? '2006-01-01' : '2024-01-01');
-            document.getElementById('toDate').value = data.toDate || (data.cpcType === '6thPay' ? '2015-12-31' : '2025-12-31');
-            document.getElementById('incrementMonth').value = data.incrementMonth || 'July';
-            document.getElementById('fixedHRA').value = data.fixedHRA || '0';
-            
-            // Load table data exactly as saved
-            if (data.tableData && Array.isArray(data.tableData)) {
-                data.tableData.forEach(row => {
-                    // Parse month from saved format (e.g., "JAN-2024") to value format (e.g., "2024-01")
-                    const monthParts = row.month.split('-');
-                    let monthValue;
-                    if (monthParts.length === 2) {
-                        const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-                        const monthIndex = monthNames.indexOf(monthParts[0].toUpperCase());
-                        if (monthIndex !== -1) {
-                            const year = monthParts[1];
-                            monthValue = `${year}-${(monthIndex+1).toString().padStart(2,'0')}`;
+            // Open modal for selection
+            openModal('Select Data to Load', savedList, (selectedKey) => {
+                const selectedSave = savedList.find(item => item.key === selectedKey);
+                if (!selectedSave) return;
+                
+                const dataJson = localStorage.getItem(selectedSave.key);
+                
+                if (!dataJson) {
+                    showMessage('❌ Saved data not found. It may have been deleted.', false);
+                    // Remove invalid entry from list
+                    const updatedList = savedList.filter(s => s.key !== selectedSave.key);
+                    localStorage.setItem(saveMetaKey, JSON.stringify(updatedList));
+                    return;
+                }
+                
+                const data = JSON.parse(dataJson);
+                
+                // Clear existing table first
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                
+                // Set CPC type first (this will update the header)
+                document.getElementById('cpcType').value = data.cpcType || '7thPay';
+                updateTableHeader();
+                
+                // Set all form fields
+                document.getElementById('empId').value = data.empId || '';
+                document.getElementById('empName').value = data.empName || 'Guest User';
+                document.getElementById('designation').value = data.designation || 'Guest';
+                document.getElementById('levelField').value = data.level || 'Level 10';
+                document.getElementById('fromDate').value = data.fromDate || (data.cpcType === '6thPay' ? '2006-01-01' : '2024-01-01');
+                document.getElementById('toDate').value = data.toDate || (data.cpcType === '6thPay' ? '2015-12-31' : '2025-12-31');
+                document.getElementById('incrementMonth').value = data.incrementMonth || 'July';
+                document.getElementById('fixedHRA').value = data.fixedHRA || '0';
+                
+                // Load table data exactly as saved
+                if (data.tableData && Array.isArray(data.tableData)) {
+                    data.tableData.forEach(row => {
+                        // Parse month from saved format (e.g., "JAN-2024") to value format (e.g., "2024-01")
+                        const monthParts = row.month.split('-');
+                        let monthValue;
+                        if (monthParts.length === 2) {
+                            const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+                            const monthIndex = monthNames.indexOf(monthParts[0].toUpperCase());
+                            if (monthIndex !== -1) {
+                                const year = monthParts[1];
+                                monthValue = `${year}-${(monthIndex+1).toString().padStart(2,'0')}`;
+                            } else {
+                                monthValue = data.cpcType === '6thPay' ? '2006-01' : '2016-01';
+                            }
                         } else {
                             monthValue = data.cpcType === '6thPay' ? '2006-01' : '2016-01';
                         }
-                    } else {
-                        monthValue = data.cpcType === '6thPay' ? '2006-01' : '2016-01';
-                    }
-                    
-                    // Create a new row but DON'T use createEmptyRow as it sets default values
-                    // Instead, create a custom row with the saved values
-                    const newRow = document.createElement('tr');
-                    const cpcType = data.cpcType;
-                    
-                    // Build the row HTML based on CPC type
-                    if (cpcType === '6thPay') {
-                        // Generate month options with the saved month selected
-                        const monthOptions = generateMonthOptions(monthValue, cpcType);
                         
-                        newRow.innerHTML = `
-                            <td class="month-with-days">
-                                <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
-                                <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
-                            </td>
-                            <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
-                            <!-- DUE -->
-                            <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
-                            <td class="due-col gp-column"><input type="number" class="due-gp" value="${row.dueGp}" step="10" min="0"></td>
-                            <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
-                            <td class="due-col gp-column"><input type="number" class="due-gp1" readonly value="${row.dueGp1}"></td>
-                            <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
-                            <td class="due-col">
-                                <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
-                                    <option value="Yes" ${row.dueHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
-                                </select>
-                            </td>
-                            <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
-                            <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
-                            <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
-                            <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
-                            <!-- DRAWN -->
-                            <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
-                            <td class="drawn-col gp-column"><input type="number" class="drawn-gp" value="${row.drawnGp}" step="10" min="0"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
-                            <td class="drawn-col gp-column"><input type="number" class="drawn-gp1" readonly value="${row.drawnGp1}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
-                            <td class="drawn-col">
-                                <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
-                                    <option value="Yes" ${row.drawnHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
-                                </select>
-                            </td>
-                            <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
-                            <!-- DIFFERENCE -->
-                            <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
-                            <td class="diff-col gp-column"><input type="number" class="diff-gp" readonly value="${row.diffGp}"></td>
-                            <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
-                            <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
-                            <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
-                            <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
-                            <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
-                            <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
-                            <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
-                            <td><button class="delete-btn" title="remove">✕</button></td>
-                        `;
-                    } else {
-                        // Generate month options with the saved month selected
-                        const monthOptions = generateMonthOptions(monthValue, cpcType);
+                        // Create a new row but DON'T use createEmptyRow as it sets default values
+                        // Instead, create a custom row with the saved values
+                        const newRow = document.createElement('tr');
+                        const cpcType = data.cpcType;
                         
-                        newRow.innerHTML = `
-                            <td class="month-with-days">
-                                <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
-                                <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
-                            </td>
-                            <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
-                            <!-- DUE -->
-                            <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
-                            <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
-                            <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
-                            <td class="due-col">
-                                <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
-                                    <option value="Fixed" ${row.dueHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
-                                    <option value="0.1*PAY2" ${row.dueHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
-                                </select>
-                            </td>
-                            <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
-                            <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
-                            <!-- PF Rate Dropdown Column -->
-                            <td class="due-col">
-                                <select class="pf-rate-formula due-pf-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="0.0833*PAY2" ${row.duePfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
-                                    <option value="0.0833*(PAY2+DA)" ${row.duePfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
-                                    <option value="0.10*PAY2" ${row.duePfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
-                                    <option value="0.10*(PAY2+DA)" ${row.duePfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
-                                </select>
-                            </td>
-                            <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
-                            <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
-                            <!-- DRAWN -->
-                            <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
-                            <td class="drawn-col">
-                                <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
-                                    <option value="Fixed" ${row.drawnHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
-                                    <option value="0.1*PAY2" ${row.drawnHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
-                                </select>
-                            </td>
-                            <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
-                            <!-- PF Rate Dropdown Column -->
-                            <td class="drawn-col">
-                                <select class="pf-rate-formula drawn-pf-rate" style="width:100%; font-size:0.6rem;">
-                                    <option value="0.0833*PAY2" ${row.drawnPfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
-                                    <option value="0.0833*(PAY2+DA)" ${row.drawnPfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
-                                    <option value="0.10*PAY2" ${row.drawnPfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
-                                    <option value="0.10*(PAY2+DA)" ${row.drawnPfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
-                                </select>
-                            </td>
-                            <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
-                            <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
-                            <!-- DIFFERENCE -->
-                            <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
-                            <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
-                            <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
-                            <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
-                            <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
-                            <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
-                            <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
-                            <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
-                            <td><button class="delete-btn" title="remove">✕</button></td>
-                        `;
-                    }
-                    
-                    // Now attach all event listeners
-                    const monthSelect = newRow.querySelector('.month-cell');
-                    const daysInput = newRow.querySelector('.days-in-month');
-                    const duePay = newRow.querySelector('.due-pay');
-                    const dueHraRate = newRow.querySelector('.due-hra-rate');
-                    const drawnPay = newRow.querySelector('.drawn-pay');
-                    const drawnHraRate = newRow.querySelector('.drawn-hra-rate');
-                    
-                    // Month change event
-                    monthSelect.addEventListener('change', () => {
-                        daysInput.value = getDaysInMonth(monthSelect.value);
+                        // Build the row HTML based on CPC type
+                        if (cpcType === '6thPay') {
+                            // Generate month options with the saved month selected
+                            const monthOptions = generateMonthOptions(monthValue, cpcType);
+                            
+                            newRow.innerHTML = `
+                                <td class="month-with-days">
+                                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
+                                    <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
+                                </td>
+                                <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
+                                <!-- DUE -->
+                                <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
+                                <td class="due-col gp-column"><input type="number" class="due-gp" value="${row.dueGp}" step="10" min="0"></td>
+                                <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
+                                <td class="due-col gp-column"><input type="number" class="due-gp1" readonly value="${row.dueGp1}"></td>
+                                <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
+                                <td class="due-col">
+                                    <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
+                                        <option value="Yes" ${row.dueHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
+                                    </select>
+                                </td>
+                                <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
+                                <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
+                                <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
+                                <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
+                                <!-- DRAWN -->
+                                <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
+                                <td class="drawn-col gp-column"><input type="number" class="drawn-gp" value="${row.drawnGp}" step="10" min="0"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
+                                <td class="drawn-col gp-column"><input type="number" class="drawn-gp1" readonly value="${row.drawnGp1}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
+                                <td class="drawn-col">
+                                    <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
+                                        <option value="Yes" ${row.drawnHraRate === 'Yes' ? 'selected' : ''}>Yes</option>
+                                    </select>
+                                </td>
+                                <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
+                                <!-- DIFFERENCE -->
+                                <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
+                                <td class="diff-col gp-column"><input type="number" class="diff-gp" readonly value="${row.diffGp}"></td>
+                                <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
+                                <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
+                                <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
+                                <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
+                                <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
+                                <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
+                                <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
+                                <td><button class="delete-btn" title="remove">✕</button></td>
+                            `;
+                        } else {
+                            // Generate month options with the saved month selected
+                            const monthOptions = generateMonthOptions(monthValue, cpcType);
+                            
+                            newRow.innerHTML = `
+                                <td class="month-with-days">
+                                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
+                                    <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
+                                </td>
+                                <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
+                                <!-- DUE -->
+                                <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
+                                <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
+                                <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
+                                <td class="due-col">
+                                    <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
+                                        <option value="Fixed" ${row.dueHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                                        <option value="0.1*PAY2" ${row.dueHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
+                                    </select>
+                                </td>
+                                <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
+                                <td class="due-col"><input type="number" class="due-total" readonly value="${row.dueTotal}"></td>
+                                <!-- PF Rate Dropdown Column -->
+                                <td class="due-col">
+                                    <select class="pf-rate-formula due-pf-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="0.0833*PAY2" ${row.duePfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                        <option value="0.0833*(PAY2+DA)" ${row.duePfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                        <option value="0.10*PAY2" ${row.duePfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                        <option value="0.10*(PAY2+DA)" ${row.duePfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
+                                    </select>
+                                </td>
+                                <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
+                                <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
+                                <!-- DRAWN -->
+                                <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
+                                <td class="drawn-col">
+                                    <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
+                                        <option value="Fixed" ${row.drawnHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                                        <option value="0.1*PAY2" ${row.drawnHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
+                                    </select>
+                                </td>
+                                <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-total" readonly value="${row.drawnTotal}"></td>
+                                <!-- PF Rate Dropdown Column -->
+                                <td class="drawn-col">
+                                    <select class="pf-rate-formula drawn-pf-rate" style="width:100%; font-size:0.6rem;">
+                                        <option value="0.0833*PAY2" ${row.drawnPfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                        <option value="0.0833*(PAY2+DA)" ${row.drawnPfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                        <option value="0.10*PAY2" ${row.drawnPfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                        <option value="0.10*(PAY2+DA)" ${row.drawnPfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
+                                    </select>
+                                </td>
+                                <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-unc" readonly value="${row.drawnUnc}"></td>
+                                <!-- DIFFERENCE -->
+                                <td class="diff-col"><input type="number" class="diff-pay" readonly value="${row.diffPay}"></td>
+                                <td class="diff-col"><input type="number" class="diff-da" readonly value="${row.diffDa}"></td>
+                                <td class="diff-col"><input type="number" class="diff-hra" readonly value="${row.diffHra}"></td>
+                                <td class="diff-col"><input type="number" class="diff-total" readonly value="${row.diffTotal}"></td>
+                                <td class="diff-col"><input type="number" class="diff-pfs" readonly value="${row.diffPfs}"></td>
+                                <td class="diff-col"><input type="number" class="diff-unc" readonly value="${row.diffUnc}"></td>
+                                <td class="diff-col"><input type="number" class="diff-net" readonly value="${row.diffNet}"></td>
+                                <td><input type="number" class="da-rate-drawn" readonly value="${row.daRate}" style="background:#f0ead0;"></td>
+                                <td><button class="delete-btn" title="remove">✕</button></td>
+                            `;
+                        }
+                        
+                        // Now attach all event listeners
+                        const monthSelect = newRow.querySelector('.month-cell');
+                        const daysInput = newRow.querySelector('.days-in-month');
+                        const duePay = newRow.querySelector('.due-pay');
+                        const dueHraRate = newRow.querySelector('.due-hra-rate');
+                        const drawnPay = newRow.querySelector('.drawn-pay');
+                        const drawnHraRate = newRow.querySelector('.drawn-hra-rate');
+                        
+                        // Month change event
+                        monthSelect.addEventListener('change', () => {
+                            daysInput.value = getDaysInMonth(monthSelect.value);
+                            recalcRow(newRow);
+                        });
+                        
+                        // Input events
+                        daysInput.addEventListener('input', () => recalcRow(newRow));
+                        duePay.addEventListener('input', () => recalcRow(newRow));
+                        dueHraRate.addEventListener('change', () => recalcRow(newRow));
+                        drawnPay.addEventListener('input', () => recalcRow(newRow));
+                        drawnHraRate.addEventListener('change', () => recalcRow(newRow));
+                        
+                        if (cpcType === '6thPay') {
+                            const dueGp = newRow.querySelector('.due-gp');
+                            const drawnGp = newRow.querySelector('.drawn-gp');
+                            if (dueGp) dueGp.addEventListener('input', () => recalcRow(newRow));
+                            if (drawnGp) drawnGp.addEventListener('input', () => recalcRow(newRow));
+                        } else {
+                            const duePfRate = newRow.querySelector('.due-pf-rate');
+                            const drawnPfRate = newRow.querySelector('.drawn-pf-rate');
+                            if (duePfRate) duePfRate.addEventListener('change', () => recalcRow(newRow));
+                            if (drawnPfRate) drawnPfRate.addEventListener('change', () => recalcRow(newRow));
+                        }
+                        
+                        // Delete button
+                        newRow.querySelector('.delete-btn').addEventListener('click', function() {
+                            if (document.querySelectorAll('#tableBody tr').length > 1) newRow.remove();
+                            else alert('At least one row required');
+                        });
+                        
+                        // Force recalculation with the correct values
                         recalcRow(newRow);
+                        
+                        tbody.appendChild(newRow);
                     });
-                    
-                    // Input events
-                    daysInput.addEventListener('input', () => recalcRow(newRow));
-                    duePay.addEventListener('input', () => recalcRow(newRow));
-                    dueHraRate.addEventListener('change', () => recalcRow(newRow));
-                    drawnPay.addEventListener('input', () => recalcRow(newRow));
-                    drawnHraRate.addEventListener('change', () => recalcRow(newRow));
-                    
-                    if (cpcType === '6thPay') {
-                        const dueGp = newRow.querySelector('.due-gp');
-                        const drawnGp = newRow.querySelector('.drawn-gp');
-                        if (dueGp) dueGp.addEventListener('input', () => recalcRow(newRow));
-                        if (drawnGp) drawnGp.addEventListener('input', () => recalcRow(newRow));
-                    } else {
-                        const duePfRate = newRow.querySelector('.due-pf-rate');
-                        const drawnPfRate = newRow.querySelector('.drawn-pf-rate');
-                        if (duePfRate) duePfRate.addEventListener('change', () => recalcRow(newRow));
-                        if (drawnPfRate) drawnPfRate.addEventListener('change', () => recalcRow(newRow));
-                    }
-                    
-                    // Delete button
-                    newRow.querySelector('.delete-btn').addEventListener('click', function() {
-                        if (document.querySelectorAll('#tableBody tr').length > 1) newRow.remove();
-                        else alert('At least one row required');
-                    });
-                    
-                    // Force recalculation with the correct values
-                    recalcRow(newRow);
-                    
-                    tbody.appendChild(newRow);
-                });
-            }
-            
-            showMessage(`✅ Loaded ${data.tableData.length} rows for ${data.empName} (${data.empId})`, true);
+                }
+                
+                showMessage(`✅ Loaded ${data.tableData.length} rows for ${data.empName} (${data.empId})`, true);
+                closeModal();
+            });
             
         } catch (error) {
             console.error('Load error:', error);
@@ -2092,25 +2019,38 @@
         }
     }
 
-    // Clear all saved data from localStorage
+    // Clear selected saved data
     function clearSavedData() {
         try {
-            if (!confirm('⚠️ Are you sure you want to delete ALL saved data from browser storage? This cannot be undone.')) {
-                return;
-            }
-            
             const saveMetaKey = 'arrears_saved_list';
             const savedList = JSON.parse(localStorage.getItem(saveMetaKey) || '[]');
             
-            // Remove all saved data entries
-            savedList.forEach(item => {
-                localStorage.removeItem(item.key);
+            if (savedList.length === 0) {
+                showInfo('ℹ️ No saved data found in browser storage');
+                return;
+            }
+            
+            // Sort by date (newest first)
+            savedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Open modal for selection
+            openModal('Select Data to Delete', savedList, (selectedKey) => {
+                const selectedSave = savedList.find(item => item.key === selectedKey);
+                if (!selectedSave) return;
+                
+                if (confirm(`Are you sure you want to delete saved data for ${selectedSave.empName} (${selectedSave.empId})?`)) {
+                    // Remove the selected item
+                    localStorage.removeItem(selectedSave.key);
+                    
+                    // Update the saved list
+                    const updatedList = savedList.filter(item => item.key !== selectedKey);
+                    localStorage.setItem(saveMetaKey, JSON.stringify(updatedList));
+                    
+                    showMessage(`✅ Deleted saved data for ${selectedSave.empName} (${selectedSave.empId})`, true);
+                    closeModal();
+                }
             });
             
-            // Remove the meta list
-            localStorage.removeItem(saveMetaKey);
-            
-            showMessage('✅ All saved data has been cleared from browser storage', true);
         } catch (error) {
             showMessage('❌ Error clearing saved data: ' + error.message, false);
         }
@@ -2521,6 +2461,15 @@
         const cpcType = document.getElementById('cpcType').value;
         document.getElementById('tableBody').appendChild(createEmptyRow(cpcType === '6thPay' ? '2006-01' : '2016-01'));
         
+        // Set up modal action button
+        document.getElementById('modalActionBtn').addEventListener('click', () => {
+            if (selectedItemKey && currentModalCallback) {
+                currentModalCallback(selectedItemKey);
+            } else {
+                alert('Please select an item first');
+            }
+        });
+        
         // Set up event listeners
         document.getElementById('cpcType').addEventListener('change', handleCPCChange);
         document.getElementById('addRowBtn').addEventListener('click', addNewRow);
@@ -2544,8 +2493,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-

@@ -216,19 +216,19 @@
         }
         button.danger:hover { background: #c82333; }
         .spacer { flex: 1; }
-        .table-wrapper {
-            overflow-x: auto;
-            overflow-y: auto;
-            border-radius: 20px;
-            border: 1px solid #cfdef5;
-            background: white;
-            width: 100%;
-            flex: 1 1 auto;
-            min-height: 200px;
-            max-height: 100%;
-            -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-        }
+       .table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 20px;
+    border: 1px solid #cfdef5;
+    background: white;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 200px;
+    max-height: 500px; /* Changed from 100% to 500px to show approximately 12 rows */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
         table {
             width: 100%;
             border-collapse: collapse;
@@ -2546,3 +2546,4 @@
 </script>
 </body>
 </html>
+

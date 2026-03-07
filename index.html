@@ -624,8 +624,8 @@
     <div class="note no-print">
         ✅ <strong>Standalone Version:</strong> All data is saved in your browser's local storage.<br>
         ✅ <strong>CPC Selection:</strong> Select 7th Pay CPC or 6th Pay CPC.<br>
-        ✅ <strong>HRA Calculation (6th Pay):</strong> HRA Rate dropdown (Yes/No) - HRA = 0.1*(PAY+GP1) if Yes, rounded to nearest rupee.<br>
-        ✅ <strong>HRA Calculation (7th Pay):</strong> HRA Rate dropdown (No, Fixed, 0.1*PAY) - HRA = Fixed HRA if Fixed selected, or 0.1*PAY if formula selected.<br>
+        ✅ <strong>HRA Calculation (6th Pay):</strong> HRA Rate dropdown (Yes/No) - HRA = 0.1*(PAY2+GP1) if Yes, rounded to nearest rupee.<br>
+        ✅ <strong>HRA Calculation (7th Pay):</strong> HRA Rate dropdown (No, Fixed, 0.1*PAY2) - HRA = Fixed HRA if Fixed selected, or 0.1*PAY2 if formula selected.<br>
         ✅ <strong>Fixed HRA:</strong> Set in the increment row for 7th Pay CPC.<br>
         ✅ <strong>PF Rate (7th Pay):</strong> Select formula from dropdown - calculates PF S in both DUE and DRAWN columns.<br>
         ✅ <strong>Save/Load:</strong> Use the buttons in the increment row to save/load data from your browser. Modern popup for selection.<br>
@@ -658,7 +658,7 @@
 </div>
 
 <script>
-    // DA lookup table (full)
+     // DA lookup table (full)
     const daTable = {
         "JAN-2006":0, "FEB-2006":0, "MAR-2006":0, "APR-2006":0, "MAY-2006":0, "JUN-2006":0,
         "JUL-2006":2, "AUG-2006":2, "SEP-2006":2, "OCT-2006":2, "NOV-2006":2, "DEC-2006":2,
@@ -814,35 +814,35 @@
         }
     }
 
-    function calculatePFS(PAY, da, formula) {
+    function calculatePFS(pay2, da, formula) {
         switch(formula) {
-            case '0.0833*PAY':
-                return PAY * 0.0833;
-            case '0.0833*(PAY+DA)':
-                return (PAY + da) * 0.0833;
-            case '0.10*PAY':
-                return PAY * 0.10;
-            case '0.10*(PAY+DA)':
-                return (PAY + da) * 0.10;
+            case '0.0833*PAY2':
+                return pay2 * 0.0833;
+            case '0.0833*(PAY2+DA)':
+                return (pay2 + da) * 0.0833;
+            case '0.10*PAY2':
+                return pay2 * 0.10;
+            case '0.10*(PAY2+DA)':
+                return (pay2 + da) * 0.10;
             default:
-                return PAY * 0.0833;
+                return pay2 * 0.0833;
         }
     }
 
-    function calculateHRA(PAY, gp1, hraRate, fixedHRA, monthVal) {
+    function calculateHRA(pay2, gp1, hraRate, fixedHRA, monthVal) {
         const year = getYearFromMonthVal(monthVal);
         
         if (year < 2016) { // 6th Pay
             if (hraRate === 'Yes') {
-                return roundToNearestInteger(0.1 * (PAY + gp1));
+                return roundToNearestInteger(0.1 * (pay2 + gp1));
             } else {
                 return 0;
             }
         } else { // 7th Pay
             if (hraRate === 'Fixed') {
                 return fixedHRA;
-            } else if (hraRate === '0.1*PAY') {
-                return roundToNearestInteger(0.1 * PAY);
+            } else if (hraRate === '0.1*PAY2') {
+                return roundToNearestInteger(0.1 * pay2);
             } else { // 'No'
                 return 0;
             }
@@ -873,26 +873,26 @@
             let duePayVal = parseFloat(duePay.value) || 0;
             let dueGpVal = parseFloat(dueGp.value) || 0;
             
-            let duePAYRaw = (duePayVal * days) / totalMonthDays;
-            let duePAY = roundValue(duePAYRaw, 'PRORATA', monthVal);
-            row.querySelector('.due-PAY').value = duePAY;
+            let duePay2Raw = (duePayVal * days) / totalMonthDays;
+            let duePay2 = roundValue(duePay2Raw, 'PRORATA', monthVal);
+            row.querySelector('.due-pay2').value = duePay2;
             
             let dueGp1Raw = (dueGpVal * days) / totalMonthDays;
             let dueGp1 = roundValue(dueGp1Raw, 'PRORATA', monthVal);
             row.querySelector('.due-gp1').value = dueGp1;
             
-            let dueDaRaw = ((duePAY + dueGp1) * daLimit) / 100;
+            let dueDaRaw = ((duePay2 + dueGp1) * daLimit) / 100;
             let dueDa = roundValue(dueDaRaw, 'PRORATA', monthVal);
             row.querySelector('.due-da').value = dueDa;
             
             const dueHraRate = row.querySelector('.due-hra-rate').value;
-            let dueHra = calculateHRA(duePAY, dueGp1, dueHraRate, fixedHRA, monthVal);
+            let dueHra = calculateHRA(duePay2, dueGp1, dueHraRate, fixedHRA, monthVal);
             row.querySelector('.due-hra').value = dueHra;
             
-            let dueTotal = duePAY + dueGp1 + dueDa + dueHra;
+            let dueTotal = duePay2 + dueGp1 + dueDa + dueHra;
             row.querySelector('.due-total').value = dueTotal;
             
-            let duePfsRaw = (duePAY + dueGp1) * 0.0833;
+            let duePfsRaw = (duePay2 + dueGp1) * 0.0833;
             let duePfs = roundValue(duePfsRaw, 'PRORATA', monthVal);
             row.querySelector('.due-pfs').value = duePfs;
             row.querySelector('.due-unc').value = duePfs;
@@ -902,31 +902,31 @@
             let drawnPayVal = parseFloat(drawnPay.value) || 0;
             let drawnGpVal = parseFloat(drawnGp.value) || 0;
             
-            let drawnPAYRaw = (drawnPayVal * days) / totalMonthDays;
-            let drawnPAY = roundValue(drawnPAYRaw, 'PRORATA', monthVal);
-            row.querySelector('.drawn-PAY').value = drawnPAY;
+            let drawnPay2Raw = (drawnPayVal * days) / totalMonthDays;
+            let drawnPay2 = roundValue(drawnPay2Raw, 'PRORATA', monthVal);
+            row.querySelector('.drawn-pay2').value = drawnPay2;
             
             let drawnGp1Raw = (drawnGpVal * days) / totalMonthDays;
             let drawnGp1 = roundValue(drawnGp1Raw, 'PRORATA', monthVal);
             row.querySelector('.drawn-gp1').value = drawnGp1;
             
-            let drawnDaRaw = ((drawnPAY + drawnGp1) * daLimit) / 100;
+            let drawnDaRaw = ((drawnPay2 + drawnGp1) * daLimit) / 100;
             let drawnDa = roundValue(drawnDaRaw, 'PRORATA', monthVal);
             row.querySelector('.drawn-da').value = drawnDa;
             
             const drawnHraRate = row.querySelector('.drawn-hra-rate').value;
-            let drawnHra = calculateHRA(drawnPAY, drawnGp1, drawnHraRate, fixedHRA, monthVal);
+            let drawnHra = calculateHRA(drawnPay2, drawnGp1, drawnHraRate, fixedHRA, monthVal);
             row.querySelector('.drawn-hra').value = drawnHra;
             
-            let drawnTotal = drawnPAY + drawnGp1 + drawnDa + drawnHra;
+            let drawnTotal = drawnPay2 + drawnGp1 + drawnDa + drawnHra;
             row.querySelector('.drawn-total').value = drawnTotal;
             
-            let drawnPfsRaw = (drawnPAY + drawnGp1) * 0.0833;
+            let drawnPfsRaw = (drawnPay2 + drawnGp1) * 0.0833;
             let drawnPfs = roundValue(drawnPfsRaw, 'PRORATA', monthVal);
             row.querySelector('.drawn-pfs').value = drawnPfs;
             row.querySelector('.drawn-unc').value = drawnPfs;
             
-            let diffPay = duePAY - drawnPAY;
+            let diffPay = duePay2 - drawnPay2;
             let diffGp = dueGp1 - drawnGp1;
             let diffDa = dueDa - drawnDa;
             let diffHra = dueHra - drawnHra;
@@ -948,25 +948,25 @@
             const duePay = row.querySelector('.due-pay');
             let duePayVal = parseFloat(duePay.value) || 0;
             
-            let duePAYRaw = (duePayVal * days) / totalMonthDays;
-            let duePAY = roundValue(duePAYRaw, 'PRORATA', monthVal);
-            row.querySelector('.due-PAY').value = duePAY;
+            let duePay2Raw = (duePayVal * days) / totalMonthDays;
+            let duePay2 = roundValue(duePay2Raw, 'PRORATA', monthVal);
+            row.querySelector('.due-pay2').value = duePay2;
 
-            let dueDaRaw = (daLimit * duePAY) / 100;
+            let dueDaRaw = (daLimit * duePay2) / 100;
             let dueDa = roundValue(dueDaRaw, 'PRORATA', monthVal);
             row.querySelector('.due-da').value = dueDa;
 
             const dueHraRate = row.querySelector('.due-hra-rate').value;
-            let dueHra = calculateHRA(duePAY, 0, dueHraRate, fixedHRA, monthVal);
+            let dueHra = calculateHRA(duePay2, 0, dueHraRate, fixedHRA, monthVal);
             row.querySelector('.due-hra').value = dueHra;
 
-            let dueTotal = duePAY + dueDa + dueHra;
+            let dueTotal = duePay2 + dueDa + dueHra;
             row.querySelector('.due-total').value = dueTotal;
 
             const duePfRate = row.querySelector('.due-pf-rate');
-            let pfFormula = duePfRate ? duePfRate.value : '0.0833*(PAY+DA)';
+            let pfFormula = duePfRate ? duePfRate.value : '0.0833*(PAY2+DA)';
             
-            let duePfsRaw = calculatePFS(duePAY, dueDa, pfFormula);
+            let duePfsRaw = calculatePFS(duePay2, dueDa, pfFormula);
             let duePfs = roundValue(duePfsRaw, 'PRORATA', monthVal);
             row.querySelector('.due-pfs').value = duePfs;
             row.querySelector('.due-unc').value = duePfs;
@@ -974,33 +974,33 @@
             const drawnPay = row.querySelector('.drawn-pay');
             let drawnPayVal = parseFloat(drawnPay.value) || 0;
             
-            let drawnPAYRaw = (drawnPayVal * days) / totalMonthDays;
-            let drawnPAY = roundValue(drawnPAYRaw, 'PRORATA', monthVal);
-            row.querySelector('.drawn-PAY').value = drawnPAY;
+            let drawnPay2Raw = (drawnPayVal * days) / totalMonthDays;
+            let drawnPay2 = roundValue(drawnPay2Raw, 'PRORATA', monthVal);
+            row.querySelector('.drawn-pay2').value = drawnPay2;
 
-            let drawnDaRaw = (daLimit * drawnPAY) / 100;
+            let drawnDaRaw = (daLimit * drawnPay2) / 100;
             let drawnDa = roundValue(drawnDaRaw, 'PRORATA', monthVal);
             row.querySelector('.drawn-da').value = drawnDa;
 
             const drawnHraRate = row.querySelector('.drawn-hra-rate').value;
-            let drawnHra = calculateHRA(drawnPAY, 0, drawnHraRate, fixedHRA, monthVal);
+            let drawnHra = calculateHRA(drawnPay2, 0, drawnHraRate, fixedHRA, monthVal);
             row.querySelector('.drawn-hra').value = drawnHra;
 
-            let drawnTotal = drawnPAY + drawnDa + drawnHra;
+            let drawnTotal = drawnPay2 + drawnDa + drawnHra;
             row.querySelector('.drawn-total').value = drawnTotal;
 
             const drawnPfRate = row.querySelector('.drawn-pf-rate');
-            pfFormula = drawnPfRate ? drawnPfRate.value : '0.0833*(PAY+DA)';
+            pfFormula = drawnPfRate ? drawnPfRate.value : '0.0833*(PAY2+DA)';
 
-            let drawnPfsRaw = calculatePFS(drawnPAY, drawnDa, pfFormula);
+            let drawnPfsRaw = calculatePFS(drawnPay2, drawnDa, pfFormula);
             let drawnPfs = roundValue(drawnPfsRaw, 'PRORATA', monthVal);
             row.querySelector('.drawn-pfs').value = drawnPfs;
             row.querySelector('.drawn-unc').value = drawnPfs;
 
-            let diffPay = duePAY - drawnPAY;
+            let diffPay = duePay2 - drawnPay2;
             let diffDa = dueDa - drawnDa;
             let diffHra = dueHra - drawnHra;
-            let diffTotal = (duePAY - drawnPAY) + (dueDa - drawnDa) + (dueHra - drawnHra);
+            let diffTotal = (duePay2 - drawnPay2) + (dueDa - drawnDa) + (dueHra - drawnHra);
             let diffPfs = duePfs - drawnPfs;
             let diffUnc = diffPfs;
             let diffNet = diffTotal - diffPfs;
@@ -1056,9 +1056,9 @@
                     <th rowspan="3" style="width:35px;">⚙️</th>
                 </tr>
                 <tr>
-                    <th class="due-col">PAY</th><th class="due-col gp-column">GP</th><th class="due-col">PAY</th><th class="due-col gp-column">GP1</th>
+                    <th class="due-col">PAY</th><th class="due-col gp-column">GP</th><th class="due-col">PAY2</th><th class="due-col gp-column">GP1</th>
                     <th class="due-col">DA</th><th class="due-col">HRA Rate</th><th class="due-col">HRA</th><th class="due-col">TOTAL</th><th class="due-col">PF S</th><th class="due-col">UN C</th>
-                    <th class="drawn-col">PAY</th><th class="drawn-col gp-column">GP</th><th class="drawn-col">PAY</th><th class="drawn-col gp-column">GP1</th>
+                    <th class="drawn-col">PAY</th><th class="drawn-col gp-column">GP</th><th class="drawn-col">PAY2</th><th class="drawn-col gp-column">GP1</th>
                     <th class="drawn-col">DA</th><th class="drawn-col">HRA Rate</th><th class="drawn-col">HRA</th><th class="drawn-col">TOTAL</th><th class="drawn-col">PF S</th><th class="drawn-col">UN C</th>
                     <th class="diff-col">PAY</th><th class="diff-col gp-column">GP</th><th class="diff-col">DA</th><th class="diff-col">HRA</th>
                     <th class="diff-col">TOTAL</th><th class="diff-col">PF S</th><th class="diff-col">UN C</th><th class="diff-col">NET</th>
@@ -1077,9 +1077,9 @@
                     <th rowspan="3" style="width:35px;">⚙️</th>
                 </tr>
                 <tr>
-                    <th class="due-col">PAY</th><th class="due-col">PAY</th><th class="due-col">DA</th><th class="due-col">HRA Rate</th>
+                    <th class="due-col">PAY</th><th class="due-col">PAY2</th><th class="due-col">DA</th><th class="due-col">HRA Rate</th>
                     <th class="due-col">HRA</th><th class="due-col">TOTAL</th><th class="due-col">PF Rate</th><th class="due-col">PF S</th><th class="due-col">UN C</th>
-                    <th class="drawn-col">PAY</th><th class="drawn-col">PAY</th><th class="drawn-col">DA</th><th class="drawn-col">HRA Rate</th>
+                    <th class="drawn-col">PAY</th><th class="drawn-col">PAY2</th><th class="drawn-col">DA</th><th class="drawn-col">HRA Rate</th>
                     <th class="drawn-col">HRA</th><th class="drawn-col">TOTAL</th><th class="drawn-col">PF Rate</th><th class="drawn-col">PF S</th><th class="drawn-col">UN C</th>
                     <th class="diff-col">PAY</th><th class="diff-col">DA</th><th class="diff-col">HRA</th><th class="diff-col">TOTAL</th>
                     <th class="diff-col">PF S</th><th class="diff-col">UN C</th><th class="diff-col">NET</th>
@@ -1113,7 +1113,7 @@
                 <!-- DUE -->
                 <td class="due-col"><input type="number" class="due-pay" value="0" step="100" min="0"></td>
                 <td class="due-col gp-column"><input type="number" class="due-gp" value="0" step="10" min="0"></td>
-                <td class="due-col"><input type="number" class="due-PAY" readonly value="0"></td>
+                <td class="due-col"><input type="number" class="due-pay2" readonly value="0"></td>
                 <td class="due-col gp-column"><input type="number" class="due-gp1" readonly value="0"></td>
                 <td class="due-col"><input type="number" class="due-da" readonly value="0"></td>
                 <td class="due-col">
@@ -1129,7 +1129,7 @@
                 <!-- DRAWN -->
                 <td class="drawn-col"><input type="number" class="drawn-pay" value="0" step="100" min="0"></td>
                 <td class="drawn-col gp-column"><input type="number" class="drawn-gp" value="0" step="10" min="0"></td>
-                <td class="drawn-col"><input type="number" class="drawn-PAY" readonly value="0"></td>
+                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="0"></td>
                 <td class="drawn-col gp-column"><input type="number" class="drawn-gp1" readonly value="0"></td>
                 <td class="drawn-col"><input type="number" class="drawn-da" readonly value="0"></td>
                 <td class="drawn-col">
@@ -1163,13 +1163,13 @@
                 <td><input type="number" class="dalimit-cell" readonly value="0" style="background:#f2f7ff;"></td>
                 <!-- DUE -->
                 <td class="due-col"><input type="number" class="due-pay" value="0" step="100" min="0"></td>
-                <td class="due-col"><input type="number" class="due-PAY" readonly value="0"></td>
+                <td class="due-col"><input type="number" class="due-pay2" readonly value="0"></td>
                 <td class="due-col"><input type="number" class="due-da" readonly value="0"></td>
                 <td class="due-col">
                     <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
                         <option value="No" selected>No</option>
                         <option value="Fixed">Fixed</option>
-                        <option value="0.1*PAY">0.1*PAY</option>
+                        <option value="0.1*PAY2">0.1*PAY2</option>
                     </select>
                 </td>
                 <td class="due-col"><input type="number" class="due-hra" readonly value="0"></td>
@@ -1177,23 +1177,23 @@
                 <!-- PF Rate Dropdown Column -->
                 <td class="due-col">
                     <select class="pf-rate-formula due-pf-rate" style="width:100%; font-size:0.6rem;">
-                        <option value="0.0833*PAY">0.0833*PAY</option>
-                        <option value="0.0833*(PAY+DA)" selected>0.0833*(PAY+DA)</option>
-                        <option value="0.10*PAY">0.10*PAY</option>
-                        <option value="0.10*(PAY+DA)">0.10*(PAY+DA)</option>
+                        <option value="0.0833*PAY2">0.0833*PAY2</option>
+                        <option value="0.0833*(PAY2+DA)" selected>0.0833*(PAY2+DA)</option>
+                        <option value="0.10*PAY2">0.10*PAY2</option>
+                        <option value="0.10*(PAY2+DA)">0.10*(PAY2+DA)</option>
                     </select>
                 </td>
                 <td class="due-col"><input type="number" class="due-pfs" readonly value="0"></td>
                 <td class="due-col"><input type="number" class="due-unc" readonly value="0"></td>
                 <!-- DRAWN -->
                 <td class="drawn-col"><input type="number" class="drawn-pay" value="0" step="100" min="0"></td>
-                <td class="drawn-col"><input type="number" class="drawn-PAY" readonly value="0"></td>
+                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="0"></td>
                 <td class="drawn-col"><input type="number" class="drawn-da" readonly value="0"></td>
                 <td class="drawn-col">
                     <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
                         <option value="No" selected>No</option>
                         <option value="Fixed">Fixed</option>
-                        <option value="0.1*PAY">0.1*PAY</option>
+                        <option value="0.1*PAY2">0.1*PAY2</option>
                     </select>
                 </td>
                 <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="0"></td>
@@ -1201,10 +1201,10 @@
                 <!-- PF Rate Dropdown Column -->
                 <td class="drawn-col">
                     <select class="pf-rate-formula drawn-pf-rate" style="width:100%; font-size:0.6rem;">
-                        <option value="0.0833*PAY">0.0833*PAY</option>
-                        <option value="0.0833*(PAY+DA)" selected>0.0833*(PAY+DA)</option>
-                        <option value="0.10*PAY">0.10*PAY</option>
-                        <option value="0.10*(PAY+DA)">0.10*(PAY+DA)</option>
+                        <option value="0.0833*PAY2">0.0833*PAY2</option>
+                        <option value="0.0833*(PAY2+DA)" selected>0.0833*(PAY2+DA)</option>
+                        <option value="0.10*PAY2">0.10*PAY2</option>
+                        <option value="0.10*(PAY2+DA)">0.10*(PAY2+DA)</option>
                     </select>
                 </td>
                 <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="0"></td>
@@ -1357,20 +1357,20 @@
                 if (prevRow) {
                     if (cpcType === '6thPay') {
                         const prevDuePay = parseFloat(prevRow.querySelector('.due-pay').value) || 0;
-                        const prevDuePAY = parseFloat(prevRow.querySelector('.due-PAY').value) || 0;
+                        const prevDuePay2 = parseFloat(prevRow.querySelector('.due-pay2').value) || 0;
                         const prevDueGp1 = parseFloat(prevRow.querySelector('.due-gp1').value) || 0;
                         
-                        let incrementAmount = 0.03 * (prevDuePAY + prevDueGp1);
+                        let incrementAmount = 0.03 * (prevDuePay2 + prevDueGp1);
                         
                         let newDuePay = prevDuePay + incrementAmount;
                         newDuePay = roundValue(newDuePay, 'INCREMENT', currentMonthVal);
                         row.querySelector('.due-pay').value = newDuePay;
                         
                         const prevDrawnPay = parseFloat(prevRow.querySelector('.drawn-pay').value) || 0;
-                        const prevDrawnPAY = parseFloat(prevRow.querySelector('.drawn-PAY').value) || 0;
+                        const prevDrawnPay2 = parseFloat(prevRow.querySelector('.drawn-pay2').value) || 0;
                         const prevDrawnGp1 = parseFloat(prevRow.querySelector('.drawn-gp1').value) || 0;
                         
-                        incrementAmount = 0.03 * (prevDrawnPAY + prevDrawnGp1);
+                        incrementAmount = 0.03 * (prevDrawnPay2 + prevDrawnGp1);
                         let newDrawnPay = prevDrawnPay + incrementAmount;
                         newDrawnPay = roundValue(newDrawnPay, 'INCREMENT', currentMonthVal);
                         row.querySelector('.drawn-pay').value = newDrawnPay;
@@ -1408,23 +1408,23 @@
         if (cpcType === '6thPay') {
             headers = [
                 'Month','Days','DA limit',
-                'Due_PAY','Due_GP','Due_PAY','Due_GP1','Due_DA','Due_HRA_Rate','Due_HRA','Due_TOTAL','Due_PFS','Due_UNC',
-                'Drawn_PAY','Drawn_GP','Drawn_PAY','Drawn_GP1','Drawn_DA','Drawn_HRA_Rate','Drawn_HRA','Drawn_TOTAL','Drawn_PFS','Drawn_UNC',
+                'Due_PAY','Due_GP','Due_PAY2','Due_GP1','Due_DA','Due_HRA_Rate','Due_HRA','Due_TOTAL','Due_PFS','Due_UNC',
+                'Drawn_PAY','Drawn_GP','Drawn_PAY2','Drawn_GP1','Drawn_DA','Drawn_HRA_Rate','Drawn_HRA','Drawn_TOTAL','Drawn_PFS','Drawn_UNC',
                 'Diff_PAY','Diff_GP','Diff_DA','Diff_HRA','Diff_TOTAL','Diff_PFS','Diff_UNC','Diff_NET','DA Rate Drawn'
             ];
         } else {
             headers = [
                 'Month','Days','DA limit',
-                'Due_PAY','Due_PAY','Due_DA','Due_HRA_Rate','Due_HRA','Due_TOTAL','Due_PF_Rate','Due_PFS','Due_UNC',
-                'Drawn_PAY','Drawn_PAY','Drawn_DA','Drawn_HRA_Rate','Drawn_HRA','Drawn_TOTAL','Drawn_PF_Rate','Drawn_PFS','Drawn_UNC',
+                'Due_PAY','Due_PAY2','Due_DA','Due_HRA_Rate','Due_HRA','Due_TOTAL','Due_PF_Rate','Due_PFS','Due_UNC',
+                'Drawn_PAY','Drawn_PAY2','Drawn_DA','Drawn_HRA_Rate','Drawn_HRA','Drawn_TOTAL','Drawn_PF_Rate','Drawn_PFS','Drawn_UNC',
                 'Diff_PAY','Diff_DA','Diff_HRA','Diff_TOTAL','Diff_PFS','Diff_UNC','Diff_NET','DA Rate Drawn'
             ];
         }
         mainData.push(headers);
 
         let totals = {
-            days:0, daLimit:0, duePay:0, dueGp:0, duePAY:0, dueGp1:0, dueDa:0, dueHra:0, dueTotal:0, duePfs:0, dueUnc:0,
-            drawnPay:0, drawnGp:0, drawnPAY:0, drawnGp1:0, drawnDa:0, drawnHra:0, drawnTotal:0, drawnPfs:0, drawnUnc:0,
+            days:0, daLimit:0, duePay:0, dueGp:0, duePay2:0, dueGp1:0, dueDa:0, dueHra:0, dueTotal:0, duePfs:0, dueUnc:0,
+            drawnPay:0, drawnGp:0, drawnPay2:0, drawnGp1:0, drawnDa:0, drawnHra:0, drawnTotal:0, drawnPfs:0, drawnUnc:0,
             diffPay:0, diffGp:0, diffDa:0, diffHra:0, diffTotal:0, diffPfs:0, diffUnc:0, diffNet:0, daRate:0
         };
 
@@ -1437,7 +1437,7 @@
             if (cpcType === '6thPay') {
                 const duePay = parseFloat(r.querySelector('.due-pay').value) || 0;
                 const dueGp = parseFloat(r.querySelector('.due-gp').value) || 0;
-                const duePAY = parseFloat(r.querySelector('.due-PAY').value) || 0;
+                const duePay2 = parseFloat(r.querySelector('.due-pay2').value) || 0;
                 const dueGp1 = parseFloat(r.querySelector('.due-gp1').value) || 0;
                 const dueDa = parseFloat(r.querySelector('.due-da').value) || 0;
                 const dueHraRate = r.querySelector('.due-hra-rate').value;
@@ -1447,7 +1447,7 @@
                 const dueUnc = parseFloat(r.querySelector('.due-unc').value) || 0;
                 const drawnPay = parseFloat(r.querySelector('.drawn-pay').value) || 0;
                 const drawnGp = parseFloat(r.querySelector('.drawn-gp').value) || 0;
-                const drawnPAY = parseFloat(r.querySelector('.drawn-PAY').value) || 0;
+                const drawnPay2 = parseFloat(r.querySelector('.drawn-pay2').value) || 0;
                 const drawnGp1 = parseFloat(r.querySelector('.drawn-gp1').value) || 0;
                 const drawnDa = parseFloat(r.querySelector('.drawn-da').value) || 0;
                 const drawnHraRate = r.querySelector('.drawn-hra-rate').value;
@@ -1465,15 +1465,15 @@
                 const diffNet = parseFloat(r.querySelector('.diff-net').value) || 0;
                 const daRate = parseFloat(r.querySelector('.da-rate-drawn').value) || 0;
 
-                mainData.push([monthLabel, days, daLim, duePay, dueGp, duePAY, dueGp1, dueDa, dueHraRate, dueHra, dueTotal, duePfs, dueUnc,
-                    drawnPay, drawnGp, drawnPAY, drawnGp1, drawnDa, drawnHraRate, drawnHra, drawnTotal, drawnPfs, drawnUnc,
+                mainData.push([monthLabel, days, daLim, duePay, dueGp, duePay2, dueGp1, dueDa, dueHraRate, dueHra, dueTotal, duePfs, dueUnc,
+                    drawnPay, drawnGp, drawnPay2, drawnGp1, drawnDa, drawnHraRate, drawnHra, drawnTotal, drawnPfs, drawnUnc,
                     diffPay, diffGp, diffDa, diffHra, diffTotal, diffPfs, diffUnc, diffNet, daRate]);
 
                 totals.days += days; totals.daLimit += daLim;
-                totals.duePay += duePay; totals.dueGp += dueGp; totals.duePAY += duePAY; totals.dueGp1 += dueGp1;
+                totals.duePay += duePay; totals.dueGp += dueGp; totals.duePay2 += duePay2; totals.dueGp1 += dueGp1;
                 totals.dueDa += dueDa; totals.dueHra += dueHra; totals.dueTotal += dueTotal;
                 totals.duePfs += duePfs; totals.dueUnc += dueUnc;
-                totals.drawnPay += drawnPay; totals.drawnGp += drawnGp; totals.drawnPAY += drawnPAY; totals.drawnGp1 += drawnGp1;
+                totals.drawnPay += drawnPay; totals.drawnGp += drawnGp; totals.drawnPay2 += drawnPay2; totals.drawnGp1 += drawnGp1;
                 totals.drawnDa += drawnDa; totals.drawnHra += drawnHra; totals.drawnTotal += drawnTotal;
                 totals.drawnPfs += drawnPfs; totals.drawnUnc += drawnUnc;
                 totals.diffPay += diffPay; totals.diffGp += diffGp; totals.diffDa += diffDa; totals.diffHra += diffHra;
@@ -1481,7 +1481,7 @@
                 totals.daRate += daRate;
             } else {
                 const duePay = parseFloat(r.querySelector('.due-pay').value) || 0;
-                const duePAY = parseFloat(r.querySelector('.due-PAY').value) || 0;
+                const duePay2 = parseFloat(r.querySelector('.due-pay2').value) || 0;
                 const dueDa = parseFloat(r.querySelector('.due-da').value) || 0;
                 const dueHraRate = r.querySelector('.due-hra-rate').value;
                 const dueHra = parseFloat(r.querySelector('.due-hra').value) || 0;
@@ -1490,7 +1490,7 @@
                 const duePfs = parseFloat(r.querySelector('.due-pfs').value) || 0;
                 const dueUnc = parseFloat(r.querySelector('.due-unc').value) || 0;
                 const drawnPay = parseFloat(r.querySelector('.drawn-pay').value) || 0;
-                const drawnPAY = parseFloat(r.querySelector('.drawn-PAY').value) || 0;
+                const drawnPay2 = parseFloat(r.querySelector('.drawn-pay2').value) || 0;
                 const drawnDa = parseFloat(r.querySelector('.drawn-da').value) || 0;
                 const drawnHraRate = r.querySelector('.drawn-hra-rate').value;
                 const drawnHra = parseFloat(r.querySelector('.drawn-hra').value) || 0;
@@ -1507,14 +1507,14 @@
                 const diffNet = parseFloat(r.querySelector('.diff-net').value) || 0;
                 const daRate = parseFloat(r.querySelector('.da-rate-drawn').value) || 0;
 
-                mainData.push([monthLabel, days, daLim, duePay, duePAY, dueDa, dueHraRate, dueHra, dueTotal, duePfRate, duePfs, dueUnc,
-                    drawnPay, drawnPAY, drawnDa, drawnHraRate, drawnHra, drawnTotal, drawnPfRate, drawnPfs, drawnUnc,
+                mainData.push([monthLabel, days, daLim, duePay, duePay2, dueDa, dueHraRate, dueHra, dueTotal, duePfRate, duePfs, dueUnc,
+                    drawnPay, drawnPay2, drawnDa, drawnHraRate, drawnHra, drawnTotal, drawnPfRate, drawnPfs, drawnUnc,
                     diffPay, diffDa, diffHra, diffTotal, diffPfs, diffUnc, diffNet, daRate]);
 
                 totals.days += days; totals.daLimit += daLim;
-                totals.duePay += duePay; totals.duePAY += duePAY; totals.dueDa += dueDa; totals.dueHra += dueHra;
+                totals.duePay += duePay; totals.duePay2 += duePay2; totals.dueDa += dueDa; totals.dueHra += dueHra;
                 totals.dueTotal += dueTotal; totals.duePfs += duePfs; totals.dueUnc += dueUnc;
-                totals.drawnPay += drawnPay; totals.drawnPAY += drawnPAY; totals.drawnDa += drawnDa; totals.drawnHra += drawnHra;
+                totals.drawnPay += drawnPay; totals.drawnPay2 += drawnPay2; totals.drawnDa += drawnDa; totals.drawnHra += drawnHra;
                 totals.drawnTotal += drawnTotal; totals.drawnPfs += drawnPfs; totals.drawnUnc += drawnUnc;
                 totals.diffPay += diffPay; totals.diffDa += diffDa; totals.diffHra += diffHra; totals.diffTotal += diffTotal;
                 totals.diffPfs += diffPfs; totals.diffUnc += diffUnc; totals.diffNet += diffNet; totals.daRate += daRate;
@@ -1523,13 +1523,13 @@
 
         if (cpcType === '6thPay') {
             mainData.push(['TOTAL', totals.days, totals.daLimit,
-                totals.duePay, totals.dueGp, totals.duePAY, totals.dueGp1, totals.dueDa, '', totals.dueHra, totals.dueTotal, totals.duePfs, totals.dueUnc,
-                totals.drawnPay, totals.drawnGp, totals.drawnPAY, totals.drawnGp1, totals.drawnDa, '', totals.drawnHra, totals.drawnTotal, totals.drawnPfs, totals.drawnUnc,
+                totals.duePay, totals.dueGp, totals.duePay2, totals.dueGp1, totals.dueDa, '', totals.dueHra, totals.dueTotal, totals.duePfs, totals.dueUnc,
+                totals.drawnPay, totals.drawnGp, totals.drawnPay2, totals.drawnGp1, totals.drawnDa, '', totals.drawnHra, totals.drawnTotal, totals.drawnPfs, totals.drawnUnc,
                 totals.diffPay, totals.diffGp, totals.diffDa, totals.diffHra, totals.diffTotal, totals.diffPfs, totals.diffUnc, totals.diffNet, totals.daRate]);
         } else {
             mainData.push(['TOTAL', totals.days, totals.daLimit,
-                totals.duePay, totals.duePAY, totals.dueDa, '', totals.dueHra, totals.dueTotal, '', totals.duePfs, totals.dueUnc,
-                totals.drawnPay, totals.drawnPAY, totals.drawnDa, '', totals.drawnHra, totals.drawnTotal, '', totals.drawnPfs, totals.drawnUnc,
+                totals.duePay, totals.duePay2, totals.dueDa, '', totals.dueHra, totals.dueTotal, '', totals.duePfs, totals.dueUnc,
+                totals.drawnPay, totals.drawnPay2, totals.drawnDa, '', totals.drawnHra, totals.drawnTotal, '', totals.drawnPfs, totals.drawnUnc,
                 totals.diffPay, totals.diffDa, totals.diffHra, totals.diffTotal, totals.diffPfs, totals.diffUnc, totals.diffNet, totals.daRate]);
         }
 
@@ -1572,7 +1572,7 @@
                     daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
                     duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
                     dueGp: parseFloat(r.querySelector('.due-gp').value) || 0,
-                    duePAY: parseFloat(r.querySelector('.due-PAY').value) || 0,
+                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
                     dueGp1: parseFloat(r.querySelector('.due-gp1').value) || 0,
                     dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
                     dueHraRate: r.querySelector('.due-hra-rate').value,
@@ -1582,7 +1582,7 @@
                     dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
                     drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
                     drawnGp: parseFloat(r.querySelector('.drawn-gp').value) || 0,
-                    drawnPAY: parseFloat(r.querySelector('.drawn-PAY').value) || 0,
+                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
                     drawnGp1: parseFloat(r.querySelector('.drawn-gp1').value) || 0,
                     drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
                     drawnHraRate: r.querySelector('.drawn-hra-rate').value,
@@ -1607,21 +1607,21 @@
                     days: parseInt(r.querySelector('.days-in-month').value) || 0,
                     daLimit: parseInt(r.querySelector('.dalimit-cell').value) || 0,
                     duePay: parseFloat(r.querySelector('.due-pay').value) || 0,
-                    duePAY: parseFloat(r.querySelector('.due-PAY').value) || 0,
+                    duePay2: parseFloat(r.querySelector('.due-pay2').value) || 0,
                     dueDa: parseFloat(r.querySelector('.due-da').value) || 0,
                     dueHraRate: r.querySelector('.due-hra-rate').value,
                     dueHra: parseFloat(r.querySelector('.due-hra').value) || 0,
                     dueTotal: parseFloat(r.querySelector('.due-total').value) || 0,
-                    duePfRate: r.querySelector('.due-pf-rate') ? r.querySelector('.due-pf-rate').value : '0.0833*(PAY+DA)',
+                    duePfRate: r.querySelector('.due-pf-rate') ? r.querySelector('.due-pf-rate').value : '0.0833*(PAY2+DA)',
                     duePfs: parseFloat(r.querySelector('.due-pfs').value) || 0,
                     dueUnc: parseFloat(r.querySelector('.due-unc').value) || 0,
                     drawnPay: parseFloat(r.querySelector('.drawn-pay').value) || 0,
-                    drawnPAY: parseFloat(r.querySelector('.drawn-PAY').value) || 0,
+                    drawnPay2: parseFloat(r.querySelector('.drawn-pay2').value) || 0,
                     drawnDa: parseFloat(r.querySelector('.drawn-da').value) || 0,
                     drawnHraRate: r.querySelector('.drawn-hra-rate').value,
                     drawnHra: parseFloat(r.querySelector('.drawn-hra').value) || 0,
                     drawnTotal: parseFloat(r.querySelector('.drawn-total').value) || 0,
-                    drawnPfRate: r.querySelector('.drawn-pf-rate') ? r.querySelector('.drawn-pf-rate').value : '0.0833*(PAY+DA)',
+                    drawnPfRate: r.querySelector('.drawn-pf-rate') ? r.querySelector('.drawn-pf-rate').value : '0.0833*(PAY2+DA)',
                     drawnPfs: parseFloat(r.querySelector('.drawn-pfs').value) || 0,
                     drawnUnc: parseFloat(r.querySelector('.drawn-unc').value) || 0,
                     diffPay: parseFloat(r.querySelector('.diff-pay').value) || 0,
@@ -1871,7 +1871,7 @@
                                 <!-- DUE -->
                                 <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
                                 <td class="due-col gp-column"><input type="number" class="due-gp" value="${row.dueGp}" step="10" min="0"></td>
-                                <td class="due-col"><input type="number" class="due-PAY" readonly value="${row.duePAY}"></td>
+                                <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
                                 <td class="due-col gp-column"><input type="number" class="due-gp1" readonly value="${row.dueGp1}"></td>
                                 <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
                                 <td class="due-col">
@@ -1887,7 +1887,7 @@
                                 <!-- DRAWN -->
                                 <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
                                 <td class="drawn-col gp-column"><input type="number" class="drawn-gp" value="${row.drawnGp}" step="10" min="0"></td>
-                                <td class="drawn-col"><input type="number" class="drawn-PAY" readonly value="${row.drawnPAY}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
                                 <td class="drawn-col gp-column"><input type="number" class="drawn-gp1" readonly value="${row.drawnGp1}"></td>
                                 <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
                                 <td class="drawn-col">
@@ -1924,13 +1924,13 @@
                                 <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
                                 <!-- DUE -->
                                 <td class="due-col"><input type="number" class="due-pay" value="${row.duePay}" step="100" min="0"></td>
-                                <td class="due-col"><input type="number" class="due-PAY" readonly value="${row.duePAY}"></td>
+                                <td class="due-col"><input type="number" class="due-pay2" readonly value="${row.duePay2}"></td>
                                 <td class="due-col"><input type="number" class="due-da" readonly value="${row.dueDa}"></td>
                                 <td class="due-col">
                                     <select class="hra-rate-select due-hra-rate" style="width:100%; font-size:0.6rem;">
                                         <option value="No" ${row.dueHraRate === 'No' ? 'selected' : ''}>No</option>
                                         <option value="Fixed" ${row.dueHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
-                                        <option value="0.1*PAY" ${row.dueHraRate === '0.1*PAY' ? 'selected' : ''}>0.1*PAY</option>
+                                        <option value="0.1*PAY2" ${row.dueHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
                                     </select>
                                 </td>
                                 <td class="due-col"><input type="number" class="due-hra" readonly value="${row.dueHra}"></td>
@@ -1938,23 +1938,23 @@
                                 <!-- PF Rate Dropdown Column -->
                                 <td class="due-col">
                                     <select class="pf-rate-formula due-pf-rate" style="width:100%; font-size:0.6rem;">
-                                        <option value="0.0833*PAY" ${row.duePfRate === '0.0833*PAY' ? 'selected' : ''}>0.0833*PAY</option>
-                                        <option value="0.0833*(PAY+DA)" ${row.duePfRate === '0.0833*(PAY+DA)' ? 'selected' : ''}>0.0833*(PAY+DA)</option>
-                                        <option value="0.10*PAY" ${row.duePfRate === '0.10*PAY' ? 'selected' : ''}>0.10*PAY</option>
-                                        <option value="0.10*(PAY+DA)" ${row.duePfRate === '0.10*(PAY+DA)' ? 'selected' : ''}>0.10*(PAY+DA)</option>
+                                        <option value="0.0833*PAY2" ${row.duePfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                        <option value="0.0833*(PAY2+DA)" ${row.duePfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                        <option value="0.10*PAY2" ${row.duePfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                        <option value="0.10*(PAY2+DA)" ${row.duePfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
                                     </select>
                                 </td>
                                 <td class="due-col"><input type="number" class="due-pfs" readonly value="${row.duePfs}"></td>
                                 <td class="due-col"><input type="number" class="due-unc" readonly value="${row.dueUnc}"></td>
                                 <!-- DRAWN -->
                                 <td class="drawn-col"><input type="number" class="drawn-pay" value="${row.drawnPay}" step="100" min="0"></td>
-                                <td class="drawn-col"><input type="number" class="drawn-PAY" readonly value="${row.drawnPAY}"></td>
+                                <td class="drawn-col"><input type="number" class="drawn-pay2" readonly value="${row.drawnPay2}"></td>
                                 <td class="drawn-col"><input type="number" class="drawn-da" readonly value="${row.drawnDa}"></td>
                                 <td class="drawn-col">
                                     <select class="hra-rate-select drawn-hra-rate" style="width:100%; font-size:0.6rem;">
                                         <option value="No" ${row.drawnHraRate === 'No' ? 'selected' : ''}>No</option>
                                         <option value="Fixed" ${row.drawnHraRate === 'Fixed' ? 'selected' : ''}>Fixed</option>
-                                        <option value="0.1*PAY" ${row.drawnHraRate === '0.1*PAY' ? 'selected' : ''}>0.1*PAY</option>
+                                        <option value="0.1*PAY2" ${row.drawnHraRate === '0.1*PAY2' ? 'selected' : ''}>0.1*PAY2</option>
                                     </select>
                                 </td>
                                 <td class="drawn-col"><input type="number" class="drawn-hra" readonly value="${row.drawnHra}"></td>
@@ -1962,10 +1962,10 @@
                                 <!-- PF Rate Dropdown Column -->
                                 <td class="drawn-col">
                                     <select class="pf-rate-formula drawn-pf-rate" style="width:100%; font-size:0.6rem;">
-                                        <option value="0.0833*PAY" ${row.drawnPfRate === '0.0833*PAY' ? 'selected' : ''}>0.0833*PAY</option>
-                                        <option value="0.0833*(PAY+DA)" ${row.drawnPfRate === '0.0833*(PAY+DA)' ? 'selected' : ''}>0.0833*(PAY+DA)</option>
-                                        <option value="0.10*PAY" ${row.drawnPfRate === '0.10*PAY' ? 'selected' : ''}>0.10*PAY</option>
-                                        <option value="0.10*(PAY+DA)" ${row.drawnPfRate === '0.10*(PAY+DA)' ? 'selected' : ''}>0.10*(PAY+DA)</option>
+                                        <option value="0.0833*PAY2" ${row.drawnPfRate === '0.0833*PAY2' ? 'selected' : ''}>0.0833*PAY2</option>
+                                        <option value="0.0833*(PAY2+DA)" ${row.drawnPfRate === '0.0833*(PAY2+DA)' ? 'selected' : ''}>0.0833*(PAY2+DA)</option>
+                                        <option value="0.10*PAY2" ${row.drawnPfRate === '0.10*PAY2' ? 'selected' : ''}>0.10*PAY2</option>
+                                        <option value="0.10*(PAY2+DA)" ${row.drawnPfRate === '0.10*(PAY2+DA)' ? 'selected' : ''}>0.10*(PAY2+DA)</option>
                                     </select>
                                 </td>
                                 <td class="drawn-col"><input type="number" class="drawn-pfs" readonly value="${row.drawnPfs}"></td>
@@ -2199,9 +2199,9 @@
                             <th rowspan="2" class="da-header">DA Rate<br>Drawn</th>
                         </tr>
                         <tr>
-                            <th class="due-header">PAY</th><th class="due-header">GP</th><th class="due-header">PAY</th><th class="due-header">GP1</th>
+                            <th class="due-header">PAY</th><th class="due-header">GP</th><th class="due-header">PAY2</th><th class="due-header">GP1</th>
                             <th class="due-header">DA</th><th class="due-header">HRA</th><th class="due-header">TOTAL</th><th class="due-header">PFS</th><th class="due-header">UNC</th>
-                            <th class="drawn-header">PAY</th><th class="drawn-header">GP</th><th class="drawn-header">PAY</th><th class="drawn-header">GP1</th>
+                            <th class="drawn-header">PAY</th><th class="drawn-header">GP</th><th class="drawn-header">PAY2</th><th class="drawn-header">GP1</th>
                             <th class="drawn-header">DA</th><th class="drawn-header">HRA</th><th class="drawn-header">TOTAL</th><th class="drawn-header">PFS</th><th class="drawn-header">UNC</th>
                             <th class="diff-header">PAY</th><th class="diff-header">GP</th><th class="diff-header">DA</th><th class="diff-header">HRA</th>
                             <th class="diff-header">TOTAL</th><th class="diff-header">PFS</th><th class="diff-header">UNC</th><th class="diff-header">NET</th>
@@ -2217,7 +2217,7 @@
                         <td>${row.daLimit}</td>
                         <td class="due-col">${Math.round(row.duePay)}</td>
                         <td class="due-col">${Math.round(row.dueGp)}</td>
-                        <td class="due-col">${Math.round(row.duePAY)}</td>
+                        <td class="due-col">${Math.round(row.duePay2)}</td>
                         <td class="due-col">${Math.round(row.dueGp1)}</td>
                         <td class="due-col">${Math.round(row.dueDa)}</td>
                         <td class="due-col">${Math.round(row.dueHra)}</td>
@@ -2226,7 +2226,7 @@
                         <td class="due-col">${Math.round(row.dueUnc)}</td>
                         <td class="drawn-col">${Math.round(row.drawnPay)}</td>
                         <td class="drawn-col">${Math.round(row.drawnGp)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPAY)}</td>
+                        <td class="drawn-col">${Math.round(row.drawnPay2)}</td>
                         <td class="drawn-col">${Math.round(row.drawnGp1)}</td>
                         <td class="drawn-col">${Math.round(row.drawnDa)}</td>
                         <td class="drawn-col">${Math.round(row.drawnHra)}</td>
@@ -2274,9 +2274,9 @@
                             <th rowspan="2" class="da-header">DA Rate<br>Drawn</th>
                         </tr>
                         <tr>
-                            <th class="due-header">PAY</th><th class="due-header">PAY</th><th class="due-header">DA</th><th class="due-header">HRA</th>
+                            <th class="due-header">PAY</th><th class="due-header">PAY2</th><th class="due-header">DA</th><th class="due-header">HRA</th>
                             <th class="due-header">TOTAL</th><th class="due-header">PFS</th><th class="due-header">UNC</th>
-                            <th class="drawn-header">PAY</th><th class="drawn-header">PAY</th><th class="drawn-header">DA</th><th class="drawn-header">HRA</th>
+                            <th class="drawn-header">PAY</th><th class="drawn-header">PAY2</th><th class="drawn-header">DA</th><th class="drawn-header">HRA</th>
                             <th class="drawn-header">TOTAL</th><th class="drawn-header">PFS</th><th class="drawn-header">UNC</th>
                             <th class="diff-header">PAY</th><th class="diff-header">DA</th><th class="diff-header">HRA</th><th class="diff-header">TOTAL</th>
                             <th class="diff-header">PFS</th><th class="diff-header">UNC</th><th class="diff-header">NET</th>
@@ -2291,14 +2291,14 @@
                         <td>${row.days}</td>
                         <td>${row.daLimit}</td>
                         <td class="due-col">${Math.round(row.duePay)}</td>
-                        <td class="due-col">${Math.round(row.duePAY)}</td>
+                        <td class="due-col">${Math.round(row.duePay2)}</td>
                         <td class="due-col">${Math.round(row.dueDa)}</td>
                         <td class="due-col">${Math.round(row.dueHra)}</td>
                         <td class="due-col">${Math.round(row.dueTotal)}</td>
                         <td class="due-col">${Math.round(row.duePfs)}</td>
                         <td class="due-col">${Math.round(row.dueUnc)}</td>
                         <td class="drawn-col">${Math.round(row.drawnPay)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPAY)}</td>
+                        <td class="drawn-col">${Math.round(row.drawnPay2)}</td>
                         <td class="drawn-col">${Math.round(row.drawnDa)}</td>
                         <td class="drawn-col">${Math.round(row.drawnHra)}</td>
                         <td class="drawn-col">${Math.round(row.drawnTotal)}</td>
@@ -2546,5 +2546,3 @@
 </script>
 </body>
 </html>
-
-

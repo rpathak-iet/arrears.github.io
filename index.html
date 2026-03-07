@@ -2028,7 +2028,7 @@
         }
     }
 
-    // MODIFIED: Generate PDF from saved data with summary on last page - BLACK AND WHITE ONLY
+    // MODIFIED: Generate PDF from saved data with summary on last page - BLACK AND WHITE ONLY, LEGAL LANDSCAPE, FONT SIZE 14, NO WRAP
     function downloadPDF() {
         try {
             const data = collectDataForSaving();
@@ -2052,6 +2052,11 @@
             let totalDiffPay = 0, totalDiffGp = 0, totalDiffDa = 0, totalDiffHra = 0, totalDiffTotal = 0;
             let totalDiffPfs = 0, totalDiffUnc = 0, totalDiffNet = 0;
             
+            // Also calculate totals for DUE and DRAWN columns
+            let totalDuePay = 0, totalDueGp = 0, totalDuePay2 = 0, totalDueGp1 = 0, totalDueDa = 0, totalDueHra = 0, totalDueTotal = 0, totalDuePfs = 0, totalDueUnc = 0;
+            let totalDrawnPay = 0, totalDrawnGp = 0, totalDrawnPay2 = 0, totalDrawnGp1 = 0, totalDrawnDa = 0, totalDrawnHra = 0, totalDrawnTotal = 0, totalDrawnPfs = 0, totalDrawnUnc = 0;
+            let totalDaRate = 0;
+            
             data.tableData.forEach(row => {
                 if (is6thPay) {
                     totalDiffPay += row.diffPay || 0;
@@ -2062,6 +2067,28 @@
                     totalDiffPfs += row.diffPfs || 0;
                     totalDiffUnc += row.diffUnc || 0;
                     totalDiffNet += row.diffNet || 0;
+                    
+                    totalDuePay += row.duePay || 0;
+                    totalDueGp += row.dueGp || 0;
+                    totalDuePay2 += row.duePay2 || 0;
+                    totalDueGp1 += row.dueGp1 || 0;
+                    totalDueDa += row.dueDa || 0;
+                    totalDueHra += row.dueHra || 0;
+                    totalDueTotal += row.dueTotal || 0;
+                    totalDuePfs += row.duePfs || 0;
+                    totalDueUnc += row.dueUnc || 0;
+                    
+                    totalDrawnPay += row.drawnPay || 0;
+                    totalDrawnGp += row.drawnGp || 0;
+                    totalDrawnPay2 += row.drawnPay2 || 0;
+                    totalDrawnGp1 += row.drawnGp1 || 0;
+                    totalDrawnDa += row.drawnDa || 0;
+                    totalDrawnHra += row.drawnHra || 0;
+                    totalDrawnTotal += row.drawnTotal || 0;
+                    totalDrawnPfs += row.drawnPfs || 0;
+                    totalDrawnUnc += row.drawnUnc || 0;
+                    
+                    totalDaRate += row.daRate || 0;
                 } else {
                     totalDiffPay += row.diffPay || 0;
                     totalDiffDa += row.diffDa || 0;
@@ -2070,11 +2097,26 @@
                     totalDiffPfs += row.diffPfs || 0;
                     totalDiffUnc += row.diffUnc || 0;
                     totalDiffNet += row.diffNet || 0;
+                    
+                    totalDuePay += row.duePay || 0;
+                    totalDuePay2 += row.duePay2 || 0;
+                    totalDueDa += row.dueDa || 0;
+                    totalDueHra += row.dueHra || 0;
+                    totalDueTotal += row.dueTotal || 0;
+                    totalDuePfs += row.duePfs || 0;
+                    totalDueUnc += row.dueUnc || 0;
+                    
+                    totalDrawnPay += row.drawnPay || 0;
+                    totalDrawnPay2 += row.drawnPay2 || 0;
+                    totalDrawnDa += row.drawnDa || 0;
+                    totalDrawnHra += row.drawnHra || 0;
+                    totalDrawnTotal += row.drawnTotal || 0;
+                    totalDrawnPfs += row.drawnPfs || 0;
+                    totalDrawnUnc += row.drawnUnc || 0;
+                    
+                    totalDaRate += row.daRate || 0;
                 }
             });
-            
-            const today = new Date();
-            const dateStr = today.toLocaleDateString();
             
             // Format dates for display
             const fromDateObj = new Date(data.fromDate);
@@ -2093,36 +2135,43 @@
             }).replace(/\//g, '/');
             
             // Create HTML content for PDF with black and white only, no colored fonts
+            // Legal page landscape, font size 14, no text wrapping
             const style = `
                 <style>
-                    @page { size: A4 landscape; margin: 1cm; }
-                    body { font-family: Arial, Helvetica, sans-serif; margin: 0.5cm; color: #000000; font-size: 9pt; }
-                    .header { text-align: center; margin-bottom: 15px; }
-                    .header h1 { margin: 2px 0; font-size: 18pt; font-weight: bold; color: #000000; }
-                    .header h2 { margin: 2px 0; font-size: 12pt; font-weight: bold; color: #000000; }
-                    .header h3 { margin: 5px 0 2px; font-size: 14pt; font-weight: bold; color: #000000; }
-                    .header p { margin: 2px 0; font-size: 10pt; color: #000000; }
+                    @page { size: legal landscape; margin: 0.5in; }
+                    body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000000; font-size: 14pt; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .header h1 { margin: 5px 0; font-size: 20pt; font-weight: bold; color: #000000; }
+                    .header h2 { margin: 5px 0; font-size: 14pt; font-weight: bold; color: #000000; }
+                    .header h3 { margin: 5px 0; font-size: 16pt; font-weight: bold; color: #000000; }
+                    .header p { margin: 3px 0; font-size: 14pt; color: #000000; }
                     .info-section { margin: 15px 0; padding: 10px; border: 1px solid #000000; display: flex; flex-wrap: wrap; }
-                    .info-row { display: flex; margin: 3px 10px 3px 0; min-width: 300px; }
-                    .info-label { font-weight: bold; width: 100px; }
+                    .info-row { display: flex; margin: 5px 15px 5px 0; min-width: 400px; }
+                    .info-label { font-weight: bold; width: 150px; }
                     .info-value { flex: 1; }
-                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 7pt; border: 1px solid #000000; }
-                    th { background: #ffffff; padding: 4px 2px; text-align: center; border: 1px solid #000000; font-weight: bold; vertical-align: middle; }
-                    td { padding: 3px 2px; text-align: center; border: 1px solid #000000; }
+                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 14pt; border: 1px solid #000000; table-layout: fixed; }
+                    th { background: #ffffff; padding: 8px 4px; text-align: center; border: 1px solid #000000; font-weight: bold; vertical-align: middle; white-space: nowrap; }
+                    td { padding: 6px 4px; text-align: center; border: 1px solid #000000; white-space: nowrap; }
                     .month-header { background: #ffffff; }
                     .total-row { font-weight: bold; }
                     .total-row td { font-weight: bold; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 8pt; border-top: 1px solid #000000; padding-top: 10px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12pt; border-top: 1px solid #000000; padding-top: 10px; }
                     .summary-section { text-align: center; margin: 30px 0 20px; }
-                    .summary-section h1 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section h2 { font-size: 14pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section h3 { font-size: 12pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section p { font-size: 10pt; margin: 5px 0; }
-                    .summary-table { width: 80%; margin: 20px auto; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000; }
-                    .summary-table td { padding: 8px 12px; border: 1px solid #000000; }
-                    .summary-table td:first-child { font-weight: bold; width: 60%; }
-                    .summary-table td:last-child { text-align: right; width: 40%; }
-                    .amount-words { margin-top: 20px; padding: 10px; border-top: 1px solid #000000; font-size: 10pt; text-align: center; }
+                    .summary-section h1 { font-size: 20pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h2 { font-size: 18pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h3 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section p { font-size: 14pt; margin: 5px 0; }
+                    .summary-table { width: 90%; margin: 20px auto; font-size: 14pt; border-collapse: collapse; border: 1px solid #000000; table-layout: fixed; }
+                    .summary-table th { padding: 8px 4px; border: 1px solid #000000; white-space: nowrap; }
+                    .summary-table td { padding: 8px 4px; border: 1px solid #000000; white-space: nowrap; }
+                    .summary-table td:first-child { font-weight: bold; width: 10%; }
+                    .summary-table td:nth-child(2) { width: 25%; }
+                    .summary-table td:nth-child(3) { width: 15%; }
+                    .summary-table td:nth-child(4) { width: 10%; }
+                    .summary-table td:nth-child(5) { width: 10%; }
+                    .summary-table td:nth-child(6) { width: 15%; }
+                    .summary-table td:nth-child(7) { width: 15%; }
+                    .amount-words { margin-top: 20px; padding: 10px; border-top: 1px solid #000000; font-size: 14pt; text-align: center; white-space: nowrap; }
                     .page-break { page-break-after: always; }
                 </style>
             `;
@@ -2152,21 +2201,21 @@
             if (is6thPay) {
                 htmlContent += `
                         <tr>
-                            <th rowspan="2" class="month-header">Month</th>
-                            <th rowspan="2" class="month-header">Days</th>
-                            <th rowspan="2" class="month-header">DA Limit</th>
-                            <th colspan="9" class="month-header">DUE</th>
-                            <th colspan="9" class="month-header">DRAWN</th>
-                            <th colspan="8" class="month-header">DIFFERENCE</th>
-                            <th rowspan="2" class="month-header">DA Rate Drawn</th>
+                            <th rowspan="2">Month</th>
+                            <th rowspan="2">Days</th>
+                            <th rowspan="2">DA Limit</th>
+                            <th colspan="9">DUE</th>
+                            <th colspan="9">DRAWN</th>
+                            <th colspan="8">DIFFERENCE</th>
+                            <th rowspan="2">DA Rate</th>
                         </tr>
                         <tr>
-                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">PAY2</th><th class="month-header">GP1</th>
-                            <th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
-                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">PAY2</th><th class="month-header">GP1</th>
-                            <th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
-                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">DA</th><th class="month-header">HRA</th>
-                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th><th class="month-header">NET</th>
+                            <th>PAY</th><th>GP</th><th>PAY</th><th>GP1</th>
+                            <th>DA</th><th>HRA</th><th>TOTAL</th><th>PFS</th><th>UNC</th>
+                            <th>PAY</th><th>GP</th><th>PAY</th><th>GP1</th>
+                            <th>DA</th><th>HRA</th><th>TOTAL</th><th>PFS</th><th>UNC</th>
+                            <th>PAY</th><th>GP</th><th>DA</th><th>HRA</th>
+                            <th>TOTAL</th><th>PFS</th><th>UNC</th><th>NET</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2210,24 +2259,24 @@
                 // Add totals row
                 htmlContent += `<tr class="total-row">
                     <td colspan="3"><strong>TOTAL</strong></td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePay || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueGp || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePay2 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueGp1 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueDa || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueHra || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueTotal || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePfs || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueUnc || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPay || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnGp || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPay2 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnGp1 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnDa || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnHra || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnTotal || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPfs || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnUnc || 0), 0))}</td>
+                    <td>${Math.round(totalDuePay)}</td>
+                    <td>${Math.round(totalDueGp)}</td>
+                    <td>${Math.round(totalDuePay2)}</td>
+                    <td>${Math.round(totalDueGp1)}</td>
+                    <td>${Math.round(totalDueDa)}</td>
+                    <td>${Math.round(totalDueHra)}</td>
+                    <td>${Math.round(totalDueTotal)}</td>
+                    <td>${Math.round(totalDuePfs)}</td>
+                    <td>${Math.round(totalDueUnc)}</td>
+                    <td>${Math.round(totalDrawnPay)}</td>
+                    <td>${Math.round(totalDrawnGp)}</td>
+                    <td>${Math.round(totalDrawnPay2)}</td>
+                    <td>${Math.round(totalDrawnGp1)}</td>
+                    <td>${Math.round(totalDrawnDa)}</td>
+                    <td>${Math.round(totalDrawnHra)}</td>
+                    <td>${Math.round(totalDrawnTotal)}</td>
+                    <td>${Math.round(totalDrawnPfs)}</td>
+                    <td>${Math.round(totalDrawnUnc)}</td>
                     <td><strong>${Math.round(totalDiffPay)}</strong></td>
                     <td><strong>${Math.round(totalDiffGp)}</strong></td>
                     <td><strong>${Math.round(totalDiffDa)}</strong></td>
@@ -2236,27 +2285,27 @@
                     <td><strong>${Math.round(totalDiffPfs)}</strong></td>
                     <td><strong>${Math.round(totalDiffUnc)}</strong></td>
                     <td><strong>${Math.round(totalDiffNet)}</strong></td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.daRate || 0), 0))}</td>
+                    <td>${Math.round(totalDaRate)}</td>
                 </tr>`;
                 
             } else {
                 htmlContent += `
                         <tr>
-                            <th rowspan="2" class="month-header">Month</th>
-                            <th rowspan="2" class="month-header">Days</th>
-                            <th rowspan="2" class="month-header">DA Limit</th>
-                            <th colspan="7" class="month-header">DUE</th>
-                            <th colspan="7" class="month-header">DRAWN</th>
-                            <th colspan="7" class="month-header">DIFFERENCE</th>
-                            <th rowspan="2" class="month-header">DA Rate Drawn</th>
+                            <th rowspan="2">Month</th>
+                            <th rowspan="2">Days</th>
+                            <th rowspan="2">DA Limit</th>
+                            <th colspan="7">DUE</th>
+                            <th colspan="7">DRAWN</th>
+                            <th colspan="7">DIFFERENCE</th>
+                            <th rowspan="2">DA Rate</th>
                         </tr>
                         <tr>
-                            <th class="month-header">PAY</th><th class="month-header">PAY2</th><th class="month-header">DA</th><th class="month-header">HRA</th>
-                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
-                            <th class="month-header">PAY</th><th class="month-header">PAY2</th><th class="month-header">DA</th><th class="month-header">HRA</th>
-                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
-                            <th class="month-header">PAY</th><th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th>
-                            <th class="month-header">PFS</th><th class="month-header">UNC</th><th class="month-header">NET</th>
+                            <th>PAY</th><th>PAY</th><th>DA</th><th>HRA</th>
+                            <th>TOTAL</th><th>PFS</th><th>UNC</th>
+                            <th>PAY</th><th>PAY</th><th>DA</th><th>HRA</th>
+                            <th>TOTAL</th><th>PFS</th><th>UNC</th>
+                            <th>PAY</th><th>DA</th><th>HRA</th><th>TOTAL</th>
+                            <th>PFS</th><th>UNC</th><th>NET</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2295,20 +2344,20 @@
                 // Add totals row
                 htmlContent += `<tr class="total-row">
                     <td colspan="3"><strong>TOTAL</strong></td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePay || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePay2 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueDa || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueHra || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueTotal || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.duePfs || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.dueUnc || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPay || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPay2 || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnDa || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnHra || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnTotal || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnPfs || 0), 0))}</td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.drawnUnc || 0), 0))}</td>
+                    <td>${Math.round(totalDuePay)}</td>
+                    <td>${Math.round(totalDuePay2)}</td>
+                    <td>${Math.round(totalDueDa)}</td>
+                    <td>${Math.round(totalDueHra)}</td>
+                    <td>${Math.round(totalDueTotal)}</td>
+                    <td>${Math.round(totalDuePfs)}</td>
+                    <td>${Math.round(totalDueUnc)}</td>
+                    <td>${Math.round(totalDrawnPay)}</td>
+                    <td>${Math.round(totalDrawnPay2)}</td>
+                    <td>${Math.round(totalDrawnDa)}</td>
+                    <td>${Math.round(totalDrawnHra)}</td>
+                    <td>${Math.round(totalDrawnTotal)}</td>
+                    <td>${Math.round(totalDrawnPfs)}</td>
+                    <td>${Math.round(totalDrawnUnc)}</td>
                     <td><strong>${Math.round(totalDiffPay)}</strong></td>
                     <td><strong>${Math.round(totalDiffDa)}</strong></td>
                     <td><strong>${Math.round(totalDiffHra)}</strong></td>
@@ -2316,7 +2365,7 @@
                     <td><strong>${Math.round(totalDiffPfs)}</strong></td>
                     <td><strong>${Math.round(totalDiffUnc)}</strong></td>
                     <td><strong>${Math.round(totalDiffNet)}</strong></td>
-                    <td>${Math.round(data.tableData.reduce((sum, r) => sum + (r.daRate || 0), 0))}</td>
+                    <td>${Math.round(totalDaRate)}</td>
                 </tr>`;
             }
             

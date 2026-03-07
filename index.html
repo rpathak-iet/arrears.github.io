@@ -299,17 +299,8 @@
             align-items: center;
             gap: 2px;
         }
-        .month-with-days select { 
-            flex: 2; 
-            min-width: 90px; 
-            font-size: 0.7rem;
-            text-align: left;
-        }
-        .month-with-days input { 
-            flex: 1; 
-            min-width: 45px; 
-            text-align: center; 
-        }
+        .month-with-days select { flex: 2; min-width: 70px; }
+        .month-with-days input { flex: 1; min-width: 40px; text-align: center; }
         .delete-btn {
             background: none;
             border: 1px solid #fbc4c4;
@@ -1041,7 +1032,7 @@
             thead.innerHTML = `
                 <tr>
                     <th rowspan="3">Month & Days</th>
-                    <th rowspan="3">DA<br>Limit</th>
+                    <th rowspan="3">DA limit</th>
                     <th colspan="9" class="section-header">DUE</th>
                     <th colspan="9" class="section-header">DRAWN</th>
                     <th colspan="8" class="section-header">DIFFERENCE</th>
@@ -1062,7 +1053,7 @@
             thead.innerHTML = `
                 <tr>
                     <th rowspan="3">Month & Days</th>
-                    <th rowspan="3">DA<br>Limit</th>
+                    <th rowspan="3">DA limit</th>
                     <th colspan="8" class="section-header">DUE</th>
                     <th colspan="8" class="section-header">DRAWN</th>
                     <th colspan="7" class="section-header">DIFFERENCE</th>
@@ -1099,7 +1090,7 @@
         if (cpcType === '6thPay') {
             tr.innerHTML = `
                 <td class="month-with-days">
-                    <select class="month-cell" style="min-width:90px;">${monthOptions}</select>
+                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
                     <input type="number" class="days-in-month" value="${defaultDays}" step="1" min="1" style="width:45px;">
                 </td>
                 <td><input type="number" class="dalimit-cell" readonly value="0" style="background:#f2f7ff;"></td>
@@ -1140,7 +1131,7 @@
         } else {
             tr.innerHTML = `
                 <td class="month-with-days">
-                    <select class="month-cell" style="min-width:90px;">${monthOptions}</select>
+                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
                     <input type="number" class="days-in-month" value="${defaultDays}" step="1" min="1" style="width:45px;">
                 </td>
                 <td><input type="number" class="dalimit-cell" readonly value="0" style="background:#f2f7ff;"></td>
@@ -1843,7 +1834,7 @@
                             
                             newRow.innerHTML = `
                                 <td class="month-with-days">
-                                    <select class="month-cell" style="min-width:90px;">${monthOptions}</select>
+                                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
                                     <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
                                 </td>
                                 <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
@@ -1887,7 +1878,7 @@
                             
                             newRow.innerHTML = `
                                 <td class="month-with-days">
-                                    <select class="month-cell" style="min-width:90px;">${monthOptions}</select>
+                                    <select class="month-cell" style="min-width:70px;">${monthOptions}</select>
                                     <input type="number" class="days-in-month" value="${row.days}" step="1" min="1" style="width:45px;">
                                 </td>
                                 <td><input type="number" class="dalimit-cell" readonly value="${row.daLimit}" style="background:#f2f7ff;"></td>
@@ -2037,7 +2028,7 @@
         }
     }
 
-    // MODIFIED: Generate PDF from saved data with summary on last page - BLACK AND WHITE ONLY, LEGAL LANDSCAPE, FONT SIZE 10, NO WRAP
+    // MODIFIED: Generate PDF from saved data with summary on last page - BLACK AND WHITE ONLY, LEGAL LANDSCAPE, FONT SIZE 8, NO WRAP
     function downloadPDF() {
         try {
             const data = collectDataForSaving();
@@ -2144,43 +2135,44 @@
             }).replace(/\//g, '/');
             
             // Create HTML content for PDF with black and white only, no colored fonts
-            // Legal page landscape, font size 10, no text wrapping
+            // Legal page landscape, font size 8, no text wrapping
             const style = `
                 <style>
                     @page { size: legal landscape; margin: 0.5in; }
-                    body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000000; font-size: 10pt; }
+                    body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000000; font-size: 8pt; }
                     .header { text-align: center; margin-bottom: 20px; }
-                    .header h1 { margin: 5px 0; font-size: 16pt; font-weight: bold; color: #000000; }
-                    .header h2 { margin: 5px 0; font-size: 12pt; font-weight: bold; color: #000000; }
-                    .header h3 { margin: 5px 0; font-size: 12pt; font-weight: bold; color: #000000; }
-                    .header p { margin: 3px 0; font-size: 10pt; color: #000000; }
+                    .header h1 { margin: 5px 0; font-size: 14pt; font-weight: bold; color: #000000; }
+                    .header h2 { margin: 5px 0; font-size: 10pt; font-weight: bold; color: #000000; }
+                    .header h3 { margin: 5px 0; font-size: 10pt; font-weight: bold; color: #000000; }
+                    .header p { margin: 3px 0; font-size: 8pt; color: #000000; }
                     .info-section { margin: 15px 0; padding: 10px; border: 1px solid #000000; display: flex; flex-wrap: wrap; }
                     .info-row { display: flex; margin: 5px 15px 5px 0; min-width: 400px; }
                     .info-label { font-weight: bold; width: 150px; }
                     .info-value { flex: 1; }
-                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 10pt; border: 1px solid #000000; table-layout: fixed; }
-                    th { background: #ffffff; padding: 6px 3px; text-align: center; border: 1px solid #000000; font-weight: bold; vertical-align: middle; white-space: nowrap; }
-                    td { padding: 4px 3px; text-align: center; border: 1px solid #000000; white-space: nowrap; }
+                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 8pt; border: 1px solid #000000; table-layout: fixed; }
+                    th { background: #ffffff; padding: 6px 2px; text-align: center; border: 1px solid #000000; font-weight: bold; vertical-align: middle; white-space: nowrap; }
+                    td { padding: 4px 2px; text-align: center; border: 1px solid #000000; white-space: nowrap; }
                     .month-header { background: #ffffff; }
                     .total-row { font-weight: bold; }
                     .total-row td { font-weight: bold; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 9pt; border-top: 1px solid #000000; padding-top: 10px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 7pt; border-top: 1px solid #000000; padding-top: 10px; }
                     .summary-section { text-align: center; margin: 30px 0 20px; }
-                    .summary-section h1 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section h2 { font-size: 14pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section h3 { font-size: 12pt; font-weight: bold; margin: 5px 0; }
-                    .summary-section p { font-size: 10pt; margin: 5px 0; }
-                    .summary-table { width: 90%; margin: 20px auto; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000; table-layout: fixed; }
-                    .summary-table th { padding: 6px 3px; border: 1px solid #000000; white-space: nowrap; }
-                    .summary-table td { padding: 6px 3px; border: 1px solid #000000; white-space: nowrap; }
-                    .summary-table td:first-child { font-weight: bold; width: 8%; }
-                    .summary-table td:nth-child(2) { width: 27%; }
-                    .summary-table td:nth-child(3) { width: 15%; }
+                    .summary-section h1 { font-size: 14pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h2 { font-size: 12pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h3 { font-size: 10pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section p { font-size: 8pt; margin: 5px 0; }
+                    .summary-table { width: 90%; margin: 20px auto; font-size: 8pt; border-collapse: collapse; border: 1px solid #000000; table-layout: fixed; }
+                    .summary-table th { padding: 6px 2px; border: 1px solid #000000; white-space: nowrap; }
+                    .summary-table td { padding: 4px 2px; border: 1px solid #000000; white-space: nowrap; }
+                    .summary-table td:first-child { font-weight: bold; width: 6%; }
+                    .summary-table td:nth-child(2) { width: 25%; }
+                    .summary-table td:nth-child(3) { width: 12%; }
                     .summary-table td:nth-child(4) { width: 10%; }
                     .summary-table td:nth-child(5) { width: 10%; }
-                    .summary-table td:nth-child(6) { width: 15%; }
-                    .summary-table td:nth-child(7) { width: 15%; }
-                    .amount-words { margin-top: 20px; padding: 10px; border-top: 1px solid #000000; font-size: 10pt; text-align: center; white-space: nowrap; }
+                    .summary-table td:nth-child(6) { width: 12%; }
+                    .summary-table td:nth-child(7) { width: 12%; }
+                    .summary-table td:nth-child(8) { width: 13%; }
+                    .amount-words { margin-top: 20px; padding: 10px; border-top: 1px solid #000000; font-size: 8pt; text-align: center; white-space: nowrap; }
                     .page-break { page-break-after: always; }
                 </style>
             `;
@@ -2210,25 +2202,21 @@
             if (is6thPay) {
                 htmlContent += `
                         <tr>
-                            <th>Month</th>
-                            <th>Days</th>
-                            <th>DA<br>Limit</th>
-                            <th colspan="9">DUE</th>
-                            <th colspan="9">DRAWN</th>
-                            <th colspan="8">DIFFERENCE</th>
-                            <th>DA Rate<br>Drawn</th>
+                            <th rowspan="2" style="width:6%">Month</th>
+                            <th rowspan="2" style="width:3%">Days</th>
+                            <th rowspan="2" style="width:4%">DA Limit</th>
+                            <th colspan="9" style="width:27%">DUE</th>
+                            <th colspan="9" style="width:27%">DRAWN</th>
+                            <th colspan="8" style="width:24%">DIFFERENCE</th>
+                            <th rowspan="2" style="width:5%">DA Rate</th>
                         </tr>
                         <tr>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th>PAY</th><th>GP</th><th>PAY</th><th>GP1</th>
-                            <th>DA</th><th>HRA</th><th>TOTAL</th><th>PFS</th><th>UNC</th>
-                            <th>PAY</th><th>GP</th><th>PAY</th><th>GP1</th>
-                            <th>DA</th><th>HRA</th><th>TOTAL</th><th>PFS</th><th>UNC</th>
-                            <th>PAY</th><th>GP</th><th>DA</th><th>HRA</th>
-                            <th>TOTAL</th><th>PFS</th><th>UNC</th><th>NET</th>
-                            <th></th>
+                            <th style="width:3%">PAY</th><th style="width:3%">GP</th><th style="width:3%">PAY</th><th style="width:3%">GP1</th>
+                            <th style="width:3%">DA</th><th style="width:3%">HRA</th><th style="width:3%">TOTAL</th><th style="width:3%">PFS</th><th style="width:3%">UNC</th>
+                            <th style="width:3%">PAY</th><th style="width:3%">GP</th><th style="width:3%">PAY</th><th style="width:3%">GP1</th>
+                            <th style="width:3%">DA</th><th style="width:3%">HRA</th><th style="width:3%">TOTAL</th><th style="width:3%">PFS</th><th style="width:3%">UNC</th>
+                            <th style="width:3%">PAY</th><th style="width:3%">GP</th><th style="width:3%">DA</th><th style="width:3%">HRA</th>
+                            <th style="width:3%">TOTAL</th><th style="width:3%">PFS</th><th style="width:3%">UNC</th><th style="width:3%">NET</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2304,25 +2292,21 @@
             } else {
                 htmlContent += `
                         <tr>
-                            <th>Month</th>
-                            <th>Days</th>
-                            <th>DA<br>Limit</th>
-                            <th colspan="7">DUE</th>
-                            <th colspan="7">DRAWN</th>
-                            <th colspan="7">DIFFERENCE</th>
-                            <th>DA Rate<br>Drawn</th>
+                            <th rowspan="2" style="width:6%">Month</th>
+                            <th rowspan="2" style="width:3%">Days</th>
+                            <th rowspan="2" style="width:4%">DA Limit</th>
+                            <th colspan="7" style="width:21%">DUE</th>
+                            <th colspan="7" style="width:21%">DRAWN</th>
+                            <th colspan="7" style="width:21%">DIFFERENCE</th>
+                            <th rowspan="2" style="width:5%">DA Rate</th>
                         </tr>
                         <tr>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th>PAY</th><th>PAY</th><th>DA</th><th>HRA</th>
-                            <th>TOTAL</th><th>PFS</th><th>UNC</th>
-                            <th>PAY</th><th>PAY</th><th>DA</th><th>HRA</th>
-                            <th>TOTAL</th><th>PFS</th><th>UNC</th>
-                            <th>PAY</th><th>DA</th><th>HRA</th><th>TOTAL</th>
-                            <th>PFS</th><th>UNC</th><th>NET</th>
-                            <th></th>
+                            <th style="width:3%">PAY</th><th style="width:3%">PAY</th><th style="width:3%">DA</th><th style="width:3%">HRA</th>
+                            <th style="width:3%">TOTAL</th><th style="width:3%">PFS</th><th style="width:3%">UNC</th>
+                            <th style="width:3%">PAY</th><th style="width:3%">PAY</th><th style="width:3%">DA</th><th style="width:3%">HRA</th>
+                            <th style="width:3%">TOTAL</th><th style="width:3%">PFS</th><th style="width:3%">UNC</th>
+                            <th style="width:3%">PAY</th><th style="width:3%">DA</th><th style="width:3%">HRA</th><th style="width:3%">TOTAL</th>
+                            <th style="width:3%">PFS</th><th style="width:3%">UNC</th><th style="width:3%">NET</th>
                         </tr>
                     </thead>
                     <tbody>

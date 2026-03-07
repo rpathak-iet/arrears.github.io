@@ -2113,17 +2113,27 @@
                 </style>
             `;
             
+            // MODIFIED: Title changes based on CPC selection
+            let mainTitle = '';
+            if (is6thPay) {
+                mainTitle = `DEVI AHILYA VISHWAVIDYALAYA, INDORE
+Statement Showing 6th Pay Salary Difference in Revised Pay Scale in Academic ${data.level}
+Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
+            } else {
+                mainTitle = `DEVI AHILYA VISHWAVIDYALAYA, INDORE
+Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic ${data.level}
+Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
+            }
+            
             let htmlContent = `
                 <html>
                 <head><meta charset="UTF-8"><title>${titlePrefix} Arrears - ${data.empName}</title>${style}</head>
                 <body>
                 <div class="header">
-                    <h1>Devi Ahilya Vishwavidyalaya</h1>
-                    <h2>Institute of Engineering & Technology</h2>
-                    <h3>${titlePrefix} Salary Difference in Revised Pay Scale</h3>
-                    <p><strong>${data.level}</strong></p>
-                    <p>Statement from ${data.fromDate} to ${data.toDate} | Month of Increment: <strong>${data.incrementMonth}</strong></p>
-                    <!-- MODIFIED: Removed Fixed HRA display -->
+                    <h1>DEVI AHILYA VISHWAVIDYALAYA, INDORE</h1>
+                    <h2>${is6thPay ? 'Statement Showing 6th Pay Salary Difference in Revised Pay Scale in Academic ' + data.level : 'Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic ' + data.level}</h2>
+                    <h3>Statement w.e.f. ${data.fromDate} to ${data.toDate}</h3>
+                    <p><strong>Month of Increment: ${data.incrementMonth}</strong></p>
                 </div>
                 
                 <div class="info-section">
@@ -2281,6 +2291,7 @@
                 </tr>`;
             }
             
+            // MODIFIED: Add summary page with the required format
             htmlContent += `
                     </tbody>
                 </table>
@@ -2288,42 +2299,24 @@
                 <div class="page-break"></div>
                 
                 <div class="header">
-                    <h1>Devi Ahilya Vishwavidyalaya</h1>
-                    <h2>Institute of Engineering & Technology</h2>
-                    <h3>Arrears Summary - ${titlePrefix}</h3>
-                    <p>${data.empName} (${data.empId}) - ${data.designation}</p>
+                    <h1>DEVI AHILYA VISHWAVIDYALAYA, INDORE</h1>
+                    <h2>SUMMARY OF ARREARS FOR REVISED PAY</h2>
+                    <h3>Statement w.e.f. ${data.fromDate} to ${data.toDate}</h3>
                 </div>
                 
                 <table class="summary-table">
-                    <tr><th colspan="2" style="background: #e2ebf9; font-size: 12pt;">SUMMARY OF ARREARS - ${titlePrefix}</th></tr>
+                    <tr><th colspan="2" style="background: #e2ebf9; font-size: 12pt;">SUMMARY OF ARREARS</th></tr>
             `;
             
-            if (is6thPay) {
-                htmlContent += `
-                    <tr><td>Total Difference PAY</td><td>₹ ${formatIndianNumber(totalDiffPay)}</td></tr>
-                    <tr><td>Total Difference GP</td><td>₹ ${formatIndianNumber(totalDiffGp)}</td></tr>
-                    <tr><td>Total Difference DA</td><td>₹ ${formatIndianNumber(totalDiffDa)}</td></tr>
-                    <tr><td>Total Difference HRA</td><td>₹ ${formatIndianNumber(totalDiffHra)}</td></tr>
-                    <tr><td style="background: #f0f6ff;">Total Difference TOTAL</td><td style="background: #f0f6ff;">₹ ${formatIndianNumber(totalDiffTotal)}</td></tr>
-                    <tr><td>Total Difference PFS</td><td>₹ ${formatIndianNumber(totalDiffPfs)}</td></tr>
-                    <tr><td>Total Difference UNC</td><td>₹ ${formatIndianNumber(totalDiffUnc)}</td></tr>
-                    <tr><td style="background: #f0f6ff; font-weight: bold;">Total Difference NET</td><td style="background: #f0f6ff; font-weight: bold;">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
-                    <tr><td class="net-amount">Net Arrears Payable</td>
-                        <td class="net-amount">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
-                `;
-            } else {
-                htmlContent += `
-                    <tr><td>Total Difference PAY</td><td>₹ ${formatIndianNumber(totalDiffPay)}</td></tr>
-                    <tr><td>Total Difference DA</td><td>₹ ${formatIndianNumber(totalDiffDa)}</td></tr>
-                    <tr><td>Total Difference HRA</td><td>₹ ${formatIndianNumber(totalDiffHra)}</td></tr>
-                    <tr><td style="background: #f0f6ff;">Total Difference TOTAL</td><td style="background: #f0f6ff;">₹ ${formatIndianNumber(totalDiffTotal)}</td></tr>
-                    <tr><td>Total Difference PFS</td><td>₹ ${formatIndianNumber(totalDiffPfs)}</td></tr>
-                    <tr><td>Total Difference UNC</td><td>₹ ${formatIndianNumber(totalDiffUnc)}</td></tr>
-                    <tr><td style="background: #f0f6ff; font-weight: bold;">Total Difference NET</td><td style="background: #f0f6ff; font-weight: bold;">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
-                    <tr><td class="net-amount">Net Arrears Payable</td>
-                        <td class="net-amount">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
-                `;
-            }
+            htmlContent += `
+                <tr><td>S No.</td><td></td></tr>
+                <tr><td>Name of Faculty</td><td>${data.empName}</td></tr>
+                <tr><td>Total Amount (Total Difference TOTAL + PFS)</td><td>₹ ${formatIndianNumber(totalDiffTotal + totalDiffPfs)}</td></tr>
+                <tr><td>PFS</td><td>₹ ${formatIndianNumber(totalDiffPfs)}</td></tr>
+                <tr><td>UNC</td><td>₹ ${formatIndianNumber(totalDiffUnc)}</td></tr>
+                <tr><td>Gross (Total Amount + UNC)</td><td>₹ ${formatIndianNumber((totalDiffTotal + totalDiffPfs) + totalDiffUnc)}</td></tr>
+                <tr><td style="background: #f0f6ff; font-weight: bold;">Net Amount (Total Difference TOTAL - PFS)</td><td style="background: #f0f6ff; font-weight: bold;">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
+            `;
             
             htmlContent += `
                 </table>

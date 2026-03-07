@@ -549,14 +549,10 @@
 <body>
 <div class="card" id="printableArea">
     <div class="univ-header">
-        <div class="header-line">Devi Ahilya Vishwavidyalaya</div>
-        <div class="header-line">Institute of Engineering & Technology</div>
+        <div class="header-line">DEVI AHILYA VISHWAVIDYALAYA, INDORE</div>
+        <div class="header-line" id="titleSecondLine">Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic <span id="levelDisplay">Level 10</span></div>
         <div class="header-line">
-            Statement Showing <span id="titlePayType">7th Pay</span> Salary Difference in Revised Pay Scale
-            <input type="text" placeholder="e.g., Level 10" value="Level 10" id="levelField">
-        </div>
-        <div class="header-line">
-            Statement from <input type="date" value="2024-01-01" id="fromDate"> to <input type="date" value="2025-12-31" id="toDate">
+            Statement w.e.f. <input type="date" value="2024-01-01" id="fromDate"> to <input type="date" value="2025-12-31" id="toDate">
         </div>
     </div>
 
@@ -590,6 +586,7 @@
         </div>
         <div class="info-right">
             <div class="info-row"><label>Designation</label> <input type="text" value="Guest" id="designation" placeholder="Your Designation"></div>
+            <div class="info-row"><label>Academic Level</label> <input type="text" value="Level 10" id="levelField" placeholder="e.g., Level 10"></div>
         </div>
     </div>
 
@@ -1016,13 +1013,48 @@
         return html;
     }
 
+    function updateTitle() {
+        const cpcType = document.getElementById('cpcType').value;
+        const level = document.getElementById('levelField').value;
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+        
+        const fromDateObj = new Date(fromDate);
+        const toDateObj = new Date(toDate);
+        
+        const fromFormatted = fromDateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).replace(/\//g, '/');
+        
+        const toFormatted = toDateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).replace(/\//g, '/');
+        
+        let secondLine = '';
+        if (cpcType === '6thPay') {
+            secondLine = `Statement Showing 6th Pay Salary Difference in Revised Pay Scale in Academic ${level}`;
+        } else {
+            secondLine = `Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic ${level}`;
+        }
+        
+        document.getElementById('titleSecondLine').textContent = secondLine;
+        document.getElementById('levelDisplay').textContent = level;
+        
+        // Update the third line with formatted dates
+        const thirdLine = document.querySelector('.header-line:nth-child(3)');
+        if (thirdLine) {
+            thirdLine.innerHTML = `Statement w.e.f. <input type="date" value="${fromDate}" id="fromDate"> to <input type="date" value="${toDate}" id="toDate">`;
+        }
+    }
+
     function updateTableHeader() {
         const thead = document.getElementById('tableHeader');
         const cpcType = document.getElementById('cpcType').value;
-        document.getElementById('titlePayType').textContent = cpcType === '6thPay' ? '6th Pay' : '7th Pay';
-        
-        // MODIFIED: Removed Fixed HRA container completely
-        // No need to show/hide fixedHRA container as it's removed
+        updateTitle();
         
         if (cpcType === '6thPay') {
             thead.innerHTML = `
@@ -2026,7 +2058,7 @@
         }
     }
 
-    // Generate PDF from saved data in the original format (HRA Rate columns hidden)
+    // Generate PDF from saved data with summary on last page
     function downloadPDF() {
         try {
             const data = collectDataForSaving();
@@ -2074,72 +2106,73 @@
             const today = new Date();
             const dateStr = today.toLocaleDateString();
             
-            // Create HTML content for PDF with Indian number formatting
-            // MODIFIED: Removed HRA Rate columns from PDF output
+            // Format dates for display
+            const fromDateObj = new Date(data.fromDate);
+            const toDateObj = new Date(data.toDate);
+            
+            const fromFormatted = fromDateObj.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).replace(/\//g, '/');
+            
+            const toFormatted = toDateObj.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).replace(/\//g, '/');
+            
+            // Create HTML content for PDF with black and white only, no colored fonts
             const style = `
                 <style>
                     @page { size: A4 landscape; margin: 1cm; }
-                    body { font-family: Arial, Helvetica, sans-serif; margin: 0.5cm; color: #333; font-size: 9pt; }
+                    body { font-family: Arial, Helvetica, sans-serif; margin: 0.5cm; color: #000000; font-size: 9pt; }
                     .header { text-align: center; margin-bottom: 15px; }
-                    .header h1 { color: #1e3a8a; margin: 2px 0; font-size: 18pt; font-weight: bold; }
-                    .header h2 { color: #b8860b; margin: 2px 0; font-size: 16pt; font-weight: bold; }
-                    .header h3 { color: #333; margin: 5px 0 2px; font-size: 14pt; }
-                    .header p { margin: 2px 0; font-size: 10pt; }
-                    .info-section { margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9; display: flex; flex-wrap: wrap; }
+                    .header h1 { margin: 2px 0; font-size: 18pt; font-weight: bold; color: #000000; }
+                    .header h2 { margin: 2px 0; font-size: 12pt; font-weight: bold; color: #000000; }
+                    .header h3 { margin: 5px 0 2px; font-size: 14pt; font-weight: bold; color: #000000; }
+                    .header p { margin: 2px 0; font-size: 10pt; color: #000000; }
+                    .info-section { margin: 15px 0; padding: 10px; border: 1px solid #000000; display: flex; flex-wrap: wrap; }
                     .info-row { display: flex; margin: 3px 10px 3px 0; min-width: 300px; }
-                    .info-label { font-weight: bold; width: 100px; color: #1e3a8a; }
+                    .info-label { font-weight: bold; width: 100px; }
                     .info-value { flex: 1; }
-                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 7pt; }
-                    th { background: #e2ebf9; padding: 4px 2px; text-align: center; border: 1px solid #000; font-weight: bold; vertical-align: middle; }
-                    td { padding: 3px 2px; text-align: center; border: 1px solid #000; }
-                    .month-header { background: #e2ebf9; }
-                    .due-header { background: #fffacd; }
-                    .drawn-header { background: #e6ffe6; }
-                    .diff-header { background: #ffe6e6; }
-                    .da-header { background: #f2f0d0; }
-                    .due-col { background-color: #fffacd; }
-                    .drawn-col { background-color: #e6ffe6; }
-                    .diff-col { background-color: #ffe6e6; }
-                    .total-row { font-weight: bold; background: #f0f6ff; }
+                    table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 7pt; border: 1px solid #000000; }
+                    th { background: #ffffff; padding: 4px 2px; text-align: center; border: 1px solid #000000; font-weight: bold; vertical-align: middle; }
+                    td { padding: 3px 2px; text-align: center; border: 1px solid #000000; }
+                    .month-header { background: #ffffff; }
+                    .total-row { font-weight: bold; }
                     .total-row td { font-weight: bold; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-                    .summary-table { width: 60%; margin: 15px auto; font-size: 10pt; border-collapse: collapse; }
-                    .summary-table td { padding: 6px 10px; border: 1px solid #000; }
-                    .summary-table td:first-child { font-weight: bold; background: #f0f6ff; width: 60%; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 8pt; border-top: 1px solid #000000; padding-top: 10px; }
+                    .summary-section { text-align: center; margin: 30px 0 20px; }
+                    .summary-section h1 { font-size: 16pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h2 { font-size: 14pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section h3 { font-size: 12pt; font-weight: bold; margin: 5px 0; }
+                    .summary-section p { font-size: 10pt; margin: 5px 0; }
+                    .summary-table { width: 80%; margin: 20px auto; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000; }
+                    .summary-table td { padding: 8px 12px; border: 1px solid #000000; }
+                    .summary-table td:first-child { font-weight: bold; width: 60%; }
                     .summary-table td:last-child { text-align: right; width: 40%; }
-                    .amount-words { margin-top: 20px; padding: 10px; border-top: 2px dashed #ccc; font-size: 10pt; text-align: center; }
-                    .net-amount { font-size: 12pt; font-weight: bold; color: #1e3a8a; }
+                    .amount-words { margin-top: 20px; padding: 10px; border-top: 1px solid #000000; font-size: 10pt; text-align: center; }
                     .page-break { page-break-after: always; }
                 </style>
             `;
             
-            // MODIFIED: Title changes based on CPC selection
-            let mainTitle = '';
-            if (is6thPay) {
-                mainTitle = `DEVI AHILYA VISHWAVIDYALAYA, INDORE
-Statement Showing 6th Pay Salary Difference in Revised Pay Scale in Academic ${data.level}
-Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
-            } else {
-                mainTitle = `DEVI AHILYA VISHWAVIDYALAYA, INDORE
-Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic ${data.level}
-Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
-            }
-            
+            // First page - Main statement
             let htmlContent = `
                 <html>
                 <head><meta charset="UTF-8"><title>${titlePrefix} Arrears - ${data.empName}</title>${style}</head>
                 <body>
                 <div class="header">
                     <h1>DEVI AHILYA VISHWAVIDYALAYA, INDORE</h1>
-                    <h2>${is6thPay ? 'Statement Showing 6th Pay Salary Difference in Revised Pay Scale in Academic ' + data.level : 'Statement Showing 7th Pay Salary Difference in Revised Pay Scale in Academic ' + data.level}</h2>
-                    <h3>Statement w.e.f. ${data.fromDate} to ${data.toDate}</h3>
-                    <p><strong>Month of Increment: ${data.incrementMonth}</strong></p>
+                    <h2>${titlePrefix} Salary Difference in Revised Pay Scale in Academic ${data.level}</h2>
+                    <h3>Statement w.e.f. ${fromFormatted} to ${toFormatted}</h3>
                 </div>
                 
                 <div class="info-section">
                     <div class="info-row"><span class="info-label">Employee ID:</span> <span class="info-value">${data.empId || 'N/A'}</span></div>
                     <div class="info-row"><span class="info-label">Employee Name:</span> <span class="info-value">${data.empName}</span></div>
                     <div class="info-row"><span class="info-label">Designation:</span> <span class="info-value">${data.designation}</span></div>
+                    <div class="info-row"><span class="info-label">Month of Increment:</span> <span class="info-value">${data.incrementMonth}</span></div>
                 </div>
                 
                 <table>
@@ -2147,24 +2180,23 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
             `;
             
             if (is6thPay) {
-                // MODIFIED: Removed HRA Rate columns from headers for 6th Pay
                 htmlContent += `
                         <tr>
                             <th rowspan="2" class="month-header">Month</th>
                             <th rowspan="2" class="month-header">Days</th>
-                            <th rowspan="2" class="month-header">DA<br>Limit</th>
-                            <th colspan="9" class="due-header">DUE</th>
-                            <th colspan="9" class="drawn-header">DRAWN</th>
-                            <th colspan="8" class="diff-header">DIFFERENCE</th>
-                            <th rowspan="2" class="da-header">DA Rate<br>Drawn</th>
+                            <th rowspan="2" class="month-header">DA Limit</th>
+                            <th colspan="9" class="month-header">DUE</th>
+                            <th colspan="9" class="month-header">DRAWN</th>
+                            <th colspan="8" class="month-header">DIFFERENCE</th>
+                            <th rowspan="2" class="month-header">DA Rate Drawn</th>
                         </tr>
                         <tr>
-                            <th class="due-header">PAY</th><th class="due-header">GP</th><th class="due-header">PAY2</th><th class="due-header">GP1</th>
-                            <th class="due-header">DA</th><th class="due-header">HRA</th><th class="due-header">TOTAL</th><th class="due-header">PFS</th><th class="due-header">UNC</th>
-                            <th class="drawn-header">PAY</th><th class="drawn-header">GP</th><th class="drawn-header">PAY2</th><th class="drawn-header">GP1</th>
-                            <th class="drawn-header">DA</th><th class="drawn-header">HRA</th><th class="drawn-header">TOTAL</th><th class="drawn-header">PFS</th><th class="drawn-header">UNC</th>
-                            <th class="diff-header">PAY</th><th class="diff-header">GP</th><th class="diff-header">DA</th><th class="diff-header">HRA</th>
-                            <th class="diff-header">TOTAL</th><th class="diff-header">PFS</th><th class="diff-header">UNC</th><th class="diff-header">NET</th>
+                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">PAY2</th><th class="month-header">GP1</th>
+                            <th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
+                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">PAY2</th><th class="month-header">GP1</th>
+                            <th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
+                            <th class="month-header">PAY</th><th class="month-header">GP</th><th class="month-header">DA</th><th class="month-header">HRA</th>
+                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th><th class="month-header">NET</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2175,37 +2207,37 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
                         <td>${row.month}</td>
                         <td>${row.days}</td>
                         <td>${row.daLimit}</td>
-                        <td class="due-col">${Math.round(row.duePay)}</td>
-                        <td class="due-col">${Math.round(row.dueGp)}</td>
-                        <td class="due-col">${Math.round(row.duePay2)}</td>
-                        <td class="due-col">${Math.round(row.dueGp1)}</td>
-                        <td class="due-col">${Math.round(row.dueDa)}</td>
-                        <td class="due-col">${Math.round(row.dueHra)}</td>
-                        <td class="due-col">${Math.round(row.dueTotal)}</td>
-                        <td class="due-col">${Math.round(row.duePfs)}</td>
-                        <td class="due-col">${Math.round(row.dueUnc)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPay)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnGp)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPay2)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnGp1)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnDa)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnHra)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnTotal)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPfs)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnUnc)}</td>
-                        <td class="diff-col">${Math.round(row.diffPay)}</td>
-                        <td class="diff-col">${Math.round(row.diffGp)}</td>
-                        <td class="diff-col">${Math.round(row.diffDa)}</td>
-                        <td class="diff-col">${Math.round(row.diffHra)}</td>
-                        <td class="diff-col">${Math.round(row.diffTotal)}</td>
-                        <td class="diff-col">${Math.round(row.diffPfs)}</td>
-                        <td class="diff-col">${Math.round(row.diffUnc)}</td>
-                        <td class="diff-col" style="font-weight: bold;">${Math.round(row.diffNet)}</td>
+                        <td>${Math.round(row.duePay)}</td>
+                        <td>${Math.round(row.dueGp)}</td>
+                        <td>${Math.round(row.duePay2)}</td>
+                        <td>${Math.round(row.dueGp1)}</td>
+                        <td>${Math.round(row.dueDa)}</td>
+                        <td>${Math.round(row.dueHra)}</td>
+                        <td>${Math.round(row.dueTotal)}</td>
+                        <td>${Math.round(row.duePfs)}</td>
+                        <td>${Math.round(row.dueUnc)}</td>
+                        <td>${Math.round(row.drawnPay)}</td>
+                        <td>${Math.round(row.drawnGp)}</td>
+                        <td>${Math.round(row.drawnPay2)}</td>
+                        <td>${Math.round(row.drawnGp1)}</td>
+                        <td>${Math.round(row.drawnDa)}</td>
+                        <td>${Math.round(row.drawnHra)}</td>
+                        <td>${Math.round(row.drawnTotal)}</td>
+                        <td>${Math.round(row.drawnPfs)}</td>
+                        <td>${Math.round(row.drawnUnc)}</td>
+                        <td>${Math.round(row.diffPay)}</td>
+                        <td>${Math.round(row.diffGp)}</td>
+                        <td>${Math.round(row.diffDa)}</td>
+                        <td>${Math.round(row.diffHra)}</td>
+                        <td>${Math.round(row.diffTotal)}</td>
+                        <td>${Math.round(row.diffPfs)}</td>
+                        <td>${Math.round(row.diffUnc)}</td>
+                        <td style="font-weight: bold;">${Math.round(row.diffNet)}</td>
                         <td>${row.daRate}</td>
                     </tr>`;
                 });
                 
-                // Adjusted total row colspan for 6th Pay
+                // Add totals row
                 htmlContent += `<tr class="total-row">
                     <td colspan="3"><strong>TOTAL</strong></td>
                     <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
@@ -2222,24 +2254,23 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
                 </tr>`;
                 
             } else {
-                // MODIFIED: Removed HRA Rate columns from headers for 7th Pay
                 htmlContent += `
                         <tr>
                             <th rowspan="2" class="month-header">Month</th>
                             <th rowspan="2" class="month-header">Days</th>
-                            <th rowspan="2" class="month-header">DA<br>Limit</th>
-                            <th colspan="7" class="due-header">DUE</th>
-                            <th colspan="7" class="drawn-header">DRAWN</th>
-                            <th colspan="7" class="diff-header">DIFFERENCE</th>
-                            <th rowspan="2" class="da-header">DA Rate<br>Drawn</th>
+                            <th rowspan="2" class="month-header">DA Limit</th>
+                            <th colspan="7" class="month-header">DUE</th>
+                            <th colspan="7" class="month-header">DRAWN</th>
+                            <th colspan="7" class="month-header">DIFFERENCE</th>
+                            <th rowspan="2" class="month-header">DA Rate Drawn</th>
                         </tr>
                         <tr>
-                            <th class="due-header">PAY</th><th class="due-header">PAY2</th><th class="due-header">DA</th><th class="due-header">HRA</th>
-                            <th class="due-header">TOTAL</th><th class="due-header">PFS</th><th class="due-header">UNC</th>
-                            <th class="drawn-header">PAY</th><th class="drawn-header">PAY2</th><th class="drawn-header">DA</th><th class="drawn-header">HRA</th>
-                            <th class="drawn-header">TOTAL</th><th class="drawn-header">PFS</th><th class="drawn-header">UNC</th>
-                            <th class="diff-header">PAY</th><th class="diff-header">DA</th><th class="diff-header">HRA</th><th class="diff-header">TOTAL</th>
-                            <th class="diff-header">PFS</th><th class="diff-header">UNC</th><th class="diff-header">NET</th>
+                            <th class="month-header">PAY</th><th class="month-header">PAY2</th><th class="month-header">DA</th><th class="month-header">HRA</th>
+                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
+                            <th class="month-header">PAY</th><th class="month-header">PAY2</th><th class="month-header">DA</th><th class="month-header">HRA</th>
+                            <th class="month-header">TOTAL</th><th class="month-header">PFS</th><th class="month-header">UNC</th>
+                            <th class="month-header">PAY</th><th class="month-header">DA</th><th class="month-header">HRA</th><th class="month-header">TOTAL</th>
+                            <th class="month-header">PFS</th><th class="month-header">UNC</th><th class="month-header">NET</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2250,32 +2281,32 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
                         <td>${row.month}</td>
                         <td>${row.days}</td>
                         <td>${row.daLimit}</td>
-                        <td class="due-col">${Math.round(row.duePay)}</td>
-                        <td class="due-col">${Math.round(row.duePay2)}</td>
-                        <td class="due-col">${Math.round(row.dueDa)}</td>
-                        <td class="due-col">${Math.round(row.dueHra)}</td>
-                        <td class="due-col">${Math.round(row.dueTotal)}</td>
-                        <td class="due-col">${Math.round(row.duePfs)}</td>
-                        <td class="due-col">${Math.round(row.dueUnc)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPay)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPay2)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnDa)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnHra)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnTotal)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnPfs)}</td>
-                        <td class="drawn-col">${Math.round(row.drawnUnc)}</td>
-                        <td class="diff-col">${Math.round(row.diffPay)}</td>
-                        <td class="diff-col">${Math.round(row.diffDa)}</td>
-                        <td class="diff-col">${Math.round(row.diffHra)}</td>
-                        <td class="diff-col">${Math.round(row.diffTotal)}</td>
-                        <td class="diff-col">${Math.round(row.diffPfs)}</td>
-                        <td class="diff-col">${Math.round(row.diffUnc)}</td>
-                        <td class="diff-col" style="font-weight: bold;">${Math.round(row.diffNet)}</td>
+                        <td>${Math.round(row.duePay)}</td>
+                        <td>${Math.round(row.duePay2)}</td>
+                        <td>${Math.round(row.dueDa)}</td>
+                        <td>${Math.round(row.dueHra)}</td>
+                        <td>${Math.round(row.dueTotal)}</td>
+                        <td>${Math.round(row.duePfs)}</td>
+                        <td>${Math.round(row.dueUnc)}</td>
+                        <td>${Math.round(row.drawnPay)}</td>
+                        <td>${Math.round(row.drawnPay2)}</td>
+                        <td>${Math.round(row.drawnDa)}</td>
+                        <td>${Math.round(row.drawnHra)}</td>
+                        <td>${Math.round(row.drawnTotal)}</td>
+                        <td>${Math.round(row.drawnPfs)}</td>
+                        <td>${Math.round(row.drawnUnc)}</td>
+                        <td>${Math.round(row.diffPay)}</td>
+                        <td>${Math.round(row.diffDa)}</td>
+                        <td>${Math.round(row.diffHra)}</td>
+                        <td>${Math.round(row.diffTotal)}</td>
+                        <td>${Math.round(row.diffPfs)}</td>
+                        <td>${Math.round(row.diffUnc)}</td>
+                        <td style="font-weight: bold;">${Math.round(row.diffNet)}</td>
                         <td>${row.daRate}</td>
                     </tr>`;
                 });
                 
-                // Adjusted total row colspan for 7th Pay
+                // Add totals row
                 htmlContent += `<tr class="total-row">
                     <td colspan="3"><strong>TOTAL</strong></td>
                     <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
@@ -2291,38 +2322,75 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
                 </tr>`;
             }
             
-            // MODIFIED: Add summary page with the required format
             htmlContent += `
                     </tbody>
                 </table>
                 
-                <div class="page-break"></div>
-                
-                <div class="header">
-                    <h1>DEVI AHILYA VISHWAVIDYALAYA, INDORE</h1>
-                    <h2>SUMMARY OF ARREARS FOR REVISED PAY</h2>
-                    <h3>Statement w.e.f. ${data.fromDate} to ${data.toDate}</h3>
+                <div class="footer">
+                    <p>Generated on: ${new Date().toLocaleString()}</p>
                 </div>
                 
-                <table class="summary-table">
-                    <tr><th colspan="2" style="background: #e2ebf9; font-size: 12pt;">SUMMARY OF ARREARS</th></tr>
-            `;
-            
-            htmlContent += `
-                <tr><td>S No.</td><td></td></tr>
-                <tr><td>Name of Faculty</td><td>${data.empName}</td></tr>
-                <tr><td>Total Amount (Total Difference TOTAL + PFS)</td><td>₹ ${formatIndianNumber(totalDiffTotal + totalDiffPfs)}</td></tr>
-                <tr><td>PFS</td><td>₹ ${formatIndianNumber(totalDiffPfs)}</td></tr>
-                <tr><td>UNC</td><td>₹ ${formatIndianNumber(totalDiffUnc)}</td></tr>
-                <tr><td>Gross (Total Amount + UNC)</td><td>₹ ${formatIndianNumber((totalDiffTotal + totalDiffPfs) + totalDiffUnc)}</td></tr>
-                <tr><td style="background: #f0f6ff; font-weight: bold;">Net Amount (Total Difference TOTAL - PFS)</td><td style="background: #f0f6ff; font-weight: bold;">₹ ${formatIndianNumber(totalDiffNet)}</td></tr>
-            `;
-            
-            htmlContent += `
-                </table>
+                <div class="page-break"></div>
                 
-                <div class="amount-words">
-                    <p><strong>Amount in Words:</strong> ${convertToWords(totalDiffNet)} Rupees Only</p>
+                <!-- Last Page - Summary -->
+                <div class="summary-section">
+                    <h1>DEVI AHILYA VISHWAVIDYALAYA, INDORE</h1>
+                    <h2>SUMMARY OF ARREARS FOR REVISED PAY</h2>
+                    <h3>Statement w.e.f. ${fromFormatted} to ${toFormatted}</h3>
+                    
+                    <table class="summary-table">
+            `;
+            
+            if (is6thPay) {
+                htmlContent += `
+                        <tr><td>S No.</td><td>Name of Faculty</td><td>Total Amount</td><td>PFS</td><td>UNC</td><td>Gross</td><td>Net Amount</td></tr>
+                        <tr>
+                            <td>1</td>
+                            <td>${data.empName}</td>
+                            <td>${formatIndianNumber(totalDiffTotal)}</td>
+                            <td>${formatIndianNumber(totalDiffPfs)}</td>
+                            <td>${formatIndianNumber(totalDiffUnc)}</td>
+                            <td>${formatIndianNumber(totalDiffTotal + totalDiffUnc)}</td>
+                            <td>${formatIndianNumber(totalDiffNet)}</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffTotal)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffPfs)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffUnc)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffTotal + totalDiffUnc)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffNet)}</strong></td>
+                        </tr>
+                `;
+            } else {
+                htmlContent += `
+                        <tr><td>S No.</td><td>Name of Faculty</td><td>Total Amount</td><td>PFS</td><td>UNC</td><td>Gross</td><td>Net Amount</td></tr>
+                        <tr>
+                            <td>1</td>
+                            <td>${data.empName}</td>
+                            <td>${formatIndianNumber(totalDiffTotal)}</td>
+                            <td>${formatIndianNumber(totalDiffPfs)}</td>
+                            <td>${formatIndianNumber(totalDiffUnc)}</td>
+                            <td>${formatIndianNumber(totalDiffTotal + totalDiffUnc)}</td>
+                            <td>${formatIndianNumber(totalDiffNet)}</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffTotal)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffPfs)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffUnc)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffTotal + totalDiffUnc)}</strong></td>
+                            <td><strong>${formatIndianNumber(totalDiffNet)}</strong></td>
+                        </tr>
+                `;
+            }
+            
+            htmlContent += `
+                    </table>
+                    
+                    <div class="amount-words">
+                        <p><strong>Amount in Words: ${convertToWords(totalDiffNet)} Rupees Only</strong></p>
+                    </div>
                 </div>
                 
                 <div style="margin-top: 30px; display: flex; justify-content: space-between;">
@@ -2389,6 +2457,7 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
             document.getElementById('incrementMonth').value = 'July';
             const defaultMonth = cpcType === '6thPay' ? '2006-01' : '2016-01';
             document.getElementById('tableBody').appendChild(createEmptyRow(defaultMonth));
+            updateTitle();
             showMessage('Form cleared', true);
         }
     }
@@ -2413,9 +2482,7 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
         
         document.getElementById('fromDate').value = newCPCType === '6thPay' ? '2006-01-01' : '2024-01-01';
         document.getElementById('toDate').value = newCPCType === '6thPay' ? '2015-12-31' : '2025-12-31';
-        document.getElementById('titlePayType').textContent = newCPCType === '6thPay' ? '6th Pay' : '7th Pay';
-        
-        // MODIFIED: Removed fixedHRA reset
+        updateTitle();
     }
 
     // ========== startup popup ==========
@@ -2475,6 +2542,11 @@ Statement w.e.f. ${data.fromDate} to ${data.toDate}`;
         document.getElementById('clearSavedBtn').addEventListener('click', clearSavedData);
         document.getElementById('downloadPDFBtn').addEventListener('click', downloadPDF);
         document.getElementById('clearBtn').addEventListener('click', clearForm);
+        
+        // Add event listeners for title updates
+        document.getElementById('levelField').addEventListener('input', updateTitle);
+        document.getElementById('fromDate').addEventListener('change', updateTitle);
+        document.getElementById('toDate').addEventListener('change', updateTitle);
         
         // MODIFIED: Removed fixedHRA event listener
         

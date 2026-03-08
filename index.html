@@ -2040,6 +2040,7 @@
 
     // MODIFIED: Generate PDF from saved data with summary on last page - BLACK AND WHITE ONLY, LEGAL LANDSCAPE
     // All HRA column widths reduced by 40% (style adjustments)
+    // "Month of Increment" line removed from info section
     function downloadPDF() {
         try {
             const data = collectDataForSaving();
@@ -2145,6 +2146,7 @@
             // Create HTML content for PDF with black and white only, no colored fonts
             // Legal page landscape
             // MODIFIED: HRA column widths reduced by 40% (th width from ~1.2% to 0.7%, from ~1% to 0.6%)
+            // MODIFIED: Month of increment line removed from info section
             const style = `
                 <style>
                     @page { size: legal landscape; margin: 0.5in; }
@@ -2199,7 +2201,7 @@
                     <div class="info-row"><span class="info-label">Employee ID:</span> <span class="info-value">${data.empId || 'N/A'}</span></div>
                     <div class="info-row"><span class="info-label">Employee Name:</span> <span class="info-value">${data.empName}</span></div>
                     <div class="info-row"><span class="info-label">Designation:</span> <span class="info-value">${data.designation}</span></div>
-                    <div class="info-row" style="white-space: nowrap;"><span class="info-label">Month of Increment:</span> <span class="info-value">${data.incrementMonth}</span></div>
+                    <!-- Month of increment line removed as per request -->
                 </div>
                 
                 <table>
